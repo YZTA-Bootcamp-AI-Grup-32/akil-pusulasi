@@ -78,9 +78,6 @@ captures/
 .navigation/
 *.orig
 .gradle
-/gradle
-gradlew
-gradlew.bat
 
 # Log files
 *.log
