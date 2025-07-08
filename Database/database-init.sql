@@ -7,12 +7,15 @@ CREATE TABLE users (
 );
 
 
+
+
+
 CREATE TABLE game_sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id VARCHAR(128) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     game_name VARCHAR(50) NOT NULL DEFAULT 'Hafiza Kartlari',
     score INT NOT NULL,
-    
+
     duration_seconds INT NOT NULL,
     difficulty_level INT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
