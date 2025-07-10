@@ -1,4 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from Database.connection import get_db
+from models import user, game_session, daily_journal
 
 app = FastAPI(
     title="Akıl Pusulası Backend",
@@ -9,3 +12,6 @@ app = FastAPI(
 @app.get("/")
 async def root():
     return {"message": "Akıl Pusulası Backend is running."}
+
+from routers import game
+app.include_router(game.router)
