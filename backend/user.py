@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer, JSON, TIMESTAMP
 from sqlalchemy.sql import func
-from Database.connection import Base
+from database.connection import Base
 
 # User table model
 class User(Base):
