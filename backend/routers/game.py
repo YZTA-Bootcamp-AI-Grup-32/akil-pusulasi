@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from Database.connection import get_db
+from database.connection import get_db
 from schemas.game_session import GameSessionCreate, GameSessionResponse, GameSessionUpdate
-from Database.crud import game_session_crud
+from database.crud import game_session_crud
 from typing import List
 from uuid import UUID
 from fastapi import HTTPException

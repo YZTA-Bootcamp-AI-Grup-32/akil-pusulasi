@@ -2,7 +2,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models.game_session import GameSession
 from schemas.game_session import GameSessionCreate, GameSessionResponse, GameSessionUpdate
 from typing import Optional, List
-from sqlalchemy.future import select
 from models.game_session import GameSession
 from sqlalchemy import select, delete
 from uuid import UUID
