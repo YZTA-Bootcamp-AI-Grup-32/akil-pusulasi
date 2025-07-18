@@ -1,5 +1,5 @@
 import asyncio
-from Database.connection import engine, Base
+from database.connection import engine, Base
 from models import user, game_session, daily_journal
 
 async def init_models():
