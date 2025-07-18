@@ -2,14 +2,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models.game_session import GameSession
 from schemas.game_session import GameSessionCreate, GameSessionResponse, GameSessionUpdate
 from typing import Optional, List
-from models.game_session import GameSession
 from sqlalchemy import select, delete
 from uuid import UUID
 
 # Create and save a new game session to the database
-async def create_game_session(db: AsyncSession, game_session_data: GameSessionCreate):
+async def create_game_session(db: AsyncSession, game_session_data: GameSessionCreate,user_id: str):
     new_session = GameSession(
-        user_id=game_session_data.user_id,
+        user_id=user_id,
         game_name=game_session_data.game_name,
         score=game_session_data.score,
         duration_seconds=game_session_data.duration_seconds,
@@ -21,10 +20,14 @@ async def create_game_session(db: AsyncSession, game_session_data: GameSessionCr
     return new_session
 
 # Retrieve all GameSession records from the database
-async def get_all_game_sessions(db: AsyncSession) -> List[GameSession]:
-    result = await db.execute(select(GameSession))
-    game_sessions = result.scalars().all()
-    return game_sessions
+async def get_game_sessions_by_user_id(db: AsyncSession,user_id: str) -> List[GameSession]:
+    result = await db.execute(
+        select(GameSession)
+        .where(GameSession.user_id == user_id)
+        .order_by(GameSession.created_at.desc())
+    )
+    
+    return result.scalars().all()
 
 # Retrieve a single game session by its ID
 async def get_game_session_by_id(db: AsyncSession, session_id: UUID) -> GameSession:
