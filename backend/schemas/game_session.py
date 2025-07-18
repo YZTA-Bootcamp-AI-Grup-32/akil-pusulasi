@@ -5,7 +5,6 @@ from uuid import UUID
 
 # Request model
 class GameSessionCreate(BaseModel):
-    user_id: str
     game_name: Optional[str] = "Hafiza Kartlari"
     score: int
     duration_seconds: int
