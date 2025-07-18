@@ -130,6 +130,5 @@ bin/
 
 # Android profiling
 *.hprof
-
 firebase-credentials.json
 google-services.json
