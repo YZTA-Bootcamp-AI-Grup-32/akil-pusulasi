@@ -132,4 +132,4 @@ bin/
 *.hprof
 
 firebase-credentials.json
-
+google-services.json
