@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "541762871649",
+    "project_id": "akil-pusulasi",
+    "storage_bucket": "akil-pusulasi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541762871649:android:daf8776171b5fd4746e520",
+        "android_client_info": {
+          "package_name": "com.example.akilpusulasi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlv6DmSwX87NbUB3RLVerA_UsUiGxImlM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
