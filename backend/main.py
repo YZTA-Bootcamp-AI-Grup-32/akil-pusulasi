@@ -1,8 +1,7 @@
-from fastapi import FastAPI
-from core.firebase_config import initialize_firebase
-from routers import game 
-
-initialize_firebase()
+from fastapi import FastAPI, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from Database.connection import get_db
+from models import user, game_session, daily_journal
 
 app = FastAPI(
     title="Akıl Pusulası Backend",
@@ -14,5 +13,5 @@ app = FastAPI(
 async def root():
     return {"message": "Akıl Pusulası Backend is running."}
 
-# Router'ları uygulamaya dahil et
-app.include_router(game.router, prefix="/api/v1")
+from routers import game
+app.include_router(game.router)
