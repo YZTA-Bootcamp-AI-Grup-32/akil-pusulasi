@@ -7,6 +7,7 @@
 ![Logo](images/sprint1/logo.jpg)
 
 ## **Takım Üyeleri**
+
 - İsmail Temüroğlu
 - Sare Türk  
 - Yaren Gülmez  
@@ -52,7 +53,6 @@ MVP sürümü, aşağıdaki temel modüllerden oluşmaktadır:
 ### 3. Zihin Günlüğü (Journaling)
 
 - Kullanıcının her gün, "Bugün nasıldı?" veya "Aklından neler geçiyor?" gibi açık uçlu bir soruya metin olarak cevap verebildiği, uygulamanın en önemli veri toplama alanlarından biridir.
-    
 - Bu metin, yapay zekanın kullanıcının o anki duygu durumunu ve düşüncelerini anlaması için kullanılır.
     
 
@@ -128,5 +128,40 @@ Bu, Akıl Pusulası MVP'sinin en özgün özelliğidir. Süreç şu şekilde iş
   - Gelecek sprintlerde daha detaylı görev planlaması yapılması kararlaştırıldı.
   - Toplantıların belirli bir zaman aralığıyla gerçekleştirilmesi kararlaştırıldı.
   - Gemini AI entegrasyonu için araştırma ve geliştirme çalışmaları başlatıldı.
+
+---
+
+# Sprint 2
+
+- **Sprint Notları**: Trello üzerinden kişilere görev atamaları yapılmıştır. Projenin son sprint ayağına temel oluşturulmuştur.
+
+- **Sprint içinde tamamlanması tahmin edilen puan**: 100 Puan
+
+- **Sprint board update**: Sprint board ekran görüntüsü:
+  ![Sprint 2 Board](images/sprint2/board.png)
+
+<details> <summary><h3>Ürün Durumu: Ekran Görüntüleri</h3></summary>
+  
+  ![Reset Password](images/sprint1/reset_password.jpg)
+  ![Create Account](images/sprint1/create_an_account.jpg)
+  ![Create Profile](images/sprint1/create_profile.jpg)
+  ![Profile Details](images/sprint1/profile_details.jpg)
+  ![Swagger Base](images/sprint2/swagger_base_image.jpg)
+
+</details>
+
+- **Sprint Review**:
+
+  - Bütün ekip projede hangi kısımların bittiğini ve bunun hakkındaki görüşlerini iletti.
+  - Temel kullanıcı yönetimi ve authentication sistemi tamamlandı.
+  - Game Session'a ve kullanıcıya ait endpointler bitti.
+  - Projenin giriş ve kayıt olma ile alakalı bütün mobil bitti.
+  - Sprint Review katılımcıları: İsmail Temüroğlu, Sare Türk, Yaren Gülmez, Uygar Meriç Kaya, Zeynep Çavuş.
+
+- **Sprint Retrospective:**
+  - Ekip iletişimi güçlendirildi.
+  - Gelecek sprintlerde daha detaylı görev planlaması yapılması kararlaştırıldı.
+  - Toplantıların herkese uygun saatler üzerinden yapılması kararlaştırıldı. Bunun için anketler oluştruldu.
+  - Oyunun zorluk mantığı için temeller oluşturuldu bunun üzerinden ilerleme yapılmasına karar verildi.
 
 ---
