@@ -142,10 +142,10 @@ Bu, Akıl Pusulası MVP'sinin en özgün özelliğidir. Süreç şu şekilde iş
 
 <details> <summary><h3>Ürün Durumu: Ekran Görüntüleri</h3></summary>
   
-  ![Reset Password](images/sprint1/reset_password.jpg)
-  ![Create Account](images/sprint1/create_an_account.jpg)
-  ![Create Profile](images/sprint1/create_profile.jpg)
-  ![Profile Details](images/sprint1/profile_details.jpg)
+  ![Reset Password](images/sprint2/reset_password.jpg)
+  ![Create Account](images/sprint2/create_an_account.jpg)
+  ![Create Profile](images/sprint2/create_profile.jpg)
+  ![Profile Details](images/sprint2/profile_details.jpg)
   ![Swagger Base](images/sprint2/swagger_base_image.jpg)
 
 </details>
