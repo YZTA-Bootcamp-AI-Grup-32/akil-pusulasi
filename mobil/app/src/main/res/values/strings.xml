@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">AKILPUSULASI</string>
+    <string name="profile_title">Profilini Oluştur 💫</string>
+    <string name="hint_name">Ad Soyad</string>
+    <string name="hint_age">Yas</string>
+    <string name="choose_interest">İlgi Alanlarını Seç:</string>
+    <string name="interest_1">Zihin Egzersizleri</string>
+    <string name="interest_2">Hafıza Kartları</string>
+    <string name="interest_3">Odaklanma Oyunları</string>
+    <string name="interest_4">Dikkat Testleri</string>
+    <string name="interest_5">Günlük Tutma</string>
+    <string name="button_continue">Devam Et 🧠</string>
+    <string name="welcome_message">Hoş geldin %1$s! 💖&#10;İlgi alanın: %2$s 🧠</string>
+
+
 </resources>

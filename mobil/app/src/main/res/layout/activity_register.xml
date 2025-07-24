@@ -1,45 +1,74 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
     android:padding="24dp"
-    android:orientation="vertical">
+    android:background="@drawable/background_register">
 
+    <!-- Başlık -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hesap Oluştur 💫"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- E-posta -->
     <EditText
         android:id="@+id/editTextEmail"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
         android:hint="E-posta"
+        android:background="@drawable/input_background"
         android:padding="12dp"
-        android:inputType="textEmailAddress" />
+        android:textColor="#000"
+        android:textColorHint="#666"/>
 
+    <!-- Şifre -->
     <EditText
         android:id="@+id/editTextPassword"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
         android:hint="Şifre"
+        android:background="@drawable/input_background"
+        android:padding="12dp"
+        android:textColor="#000"
+        android:layout_marginTop="16dp"
         android:inputType="textPassword"
-        android:padding="12dp" />
+        android:textColorHint="#666"/>
 
+    <!-- Şifreyi göster checkbox -->
     <CheckBox
         android:id="@+id/checkBoxShowPassword"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
-        android:text="Şifreyi Göster" />
+        android:minWidth="48dp"
+        android:text="Şifreyi Göster"
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="12dp"/>
 
+
+    <!-- Kayıt Ol butonu -->
     <Button
         android:id="@+id/buttonRegister"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Kayıt Ol" />
+        android:text="Kayıt Ol ✨"
+        android:textColor="#FFF"
+        android:background="@drawable/button_glow"
+        android:layout_marginTop="24dp"/>
 
+    <!-- Girişe geri dön linki -->
     <TextView
         android:id="@+id/textViewGoToLogin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Giriş Ekranına Dön"
-        android:textColor="@android:color/holo_blue_dark"
-        android:textStyle="bold" />
+        android:text="Zaten hesabın var mı? Giriş yap"
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="16dp"/>
 </LinearLayout>
-
