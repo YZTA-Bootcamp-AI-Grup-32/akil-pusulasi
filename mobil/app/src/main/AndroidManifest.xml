@@ -38,6 +38,12 @@
 
         <activity android:name=".ResetPasswordActivity" />
 
+        <activity android:name=".ProfileActivity" />
+
+        <activity android:name=".WelcomeActivity"/>
+
+
+
 
     </application>
 
