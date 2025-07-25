@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from core.firebase_config import initialize_firebase
-from routers import game, users
+from routers import game, users, journals
 
 initialize_firebase()
 
@@ -20,4 +20,9 @@ app.include_router(game.router, prefix="/api/v1")
 app.include_router(
     users.router,
     prefix="/api/v1/users"
+)
+
+app.include_router(
+    journals.router,
+    prefix="/api/v1"
 )

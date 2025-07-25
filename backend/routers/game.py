@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.connection import get_db
 from schemas.game_session import GameSessionCreate, GameSessionResponse, GameSessionUpdate
+from schemas.game_session import GameParametersResponse 
+from utils.difficulty_adjuster import calculate_next_difficulty_level, DIFFICULTY_LEVELS
 from database.crud import game_session_crud
 from typing import List
 from uuid import UUID
@@ -98,3 +100,30 @@ async def update_game_session_by_id_endpoint(
     
     updated_session = await game_session_crud.update_game_session_by_id(db, session_id, update_data)
     return updated_session
+
+@router.get("/new-session-parameters", response_model=GameParametersResponse)
+async def get_new_game_parameters(
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Calculates and returns the optimal parameters for the user's next game session.
+    The mobile app should call this endpoint right before starting a new game.
+    """
+    user_uid = current_user.get("uid")
+    
+    # Get the user's previous game sessions (ordered from newest to oldest)
+    # Your existing CRUD function works perfectly for this.
+    previous_sessions = await game_session_crud.get_game_sessions_by_user_id(db, user_id=user_uid)
+    
+    # Calculate the next difficulty level using our new heuristic logic
+    next_level = calculate_next_difficulty_level(previous_sessions)
+    
+    # Get the game parameters for that level
+    parameters = DIFFICULTY_LEVELS.get(next_level)
+    
+    if not parameters:
+        # Fallback in case of an invalid level number
+        raise HTTPException(status_code=500, detail="Could not determine difficulty parameters.")
+        
+    return GameParametersResponse(difficulty_level=next_level, **parameters)
