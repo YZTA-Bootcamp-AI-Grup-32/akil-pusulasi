@@ -28,3 +28,10 @@ class GameSessionUpdate(BaseModel):
     score: Optional[int] = None
     duration_seconds: Optional[int] = None
     difficulty_level: Optional[int] = None
+
+
+class GameParametersResponse(BaseModel):
+    difficulty_level: int
+    pattern_size: int
+    grid_size: int
+    display_time_ms: int
