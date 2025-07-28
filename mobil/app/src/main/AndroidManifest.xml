@@ -13,7 +13,12 @@
         android:theme="@style/Theme.AKILPUSULASI"
         tools:targetApi="31">
 
-        <!-- Başlangıç aktivitesi: LoginActivity -->
+
+
+
+
+
+        <!-- MainActivity ŞU AN BAŞLANGIÇ (Launch) OLACAK -->
         <activity
             android:name=".LoginActivity"
             android:exported="true"
@@ -23,6 +28,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
 
         <!-- Diğer aktivite: MainActivity -->
         <activity
@@ -37,7 +43,8 @@
 
 
         <activity android:name=".ResetPasswordActivity" />
-
+        <activity android:name=".GameActivity" />
+        <activity android:name=".JournalActivity" />
 
     </application>
 

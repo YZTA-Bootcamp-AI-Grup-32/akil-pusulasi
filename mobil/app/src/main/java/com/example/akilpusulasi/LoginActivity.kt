@@ -56,6 +56,15 @@ class LoginActivity : AppCompatActivity() {
                 passwordEditText.requestFocus()
                 return@setOnClickListener
             }
+            // Geçici sahte kontrol
+            if (email == "test@" && password == "1234") {
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+                finish()
+            } else {
+                Toast.makeText(this, "Geçersiz e-posta veya şifre", Toast.LENGTH_SHORT).show()
+            }
+
 
             // TODO: Firebase Authentication ile giriş işlemini buraya ekle
             Toast.makeText(this, "Giriş denemesi: $email", Toast.LENGTH_SHORT).show()
