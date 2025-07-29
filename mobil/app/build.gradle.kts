@@ -55,9 +55,9 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
 
 
-    implementation('com.squareup.retrofit2:retrofit:2.9.0')
-    implementation('com.squareup.retrofit2:converter-gson:2.9.0') // For JSON serialization/deserialization
-    implementation('com.squareup.okhttp3:logging-interceptor:4.11.0') // For logging network requests
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 
     // AndroidX ve UI bileşenleri
     implementation(libs.androidx.core.ktx)
