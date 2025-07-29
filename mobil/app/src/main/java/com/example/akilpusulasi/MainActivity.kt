@@ -1,47 +1,51 @@
 package com.example.akilpusulasi
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.akilpusulasi.ui.theme.AKILPUSULASITheme
+import androidx.appcompat.app.AppCompatActivity
 
-class MainActivity : ComponentActivity() {
+import android.content.Intent
+import android.widget.LinearLayout
+
+
+class MainActivity : AppCompatActivity() {
+    private lateinit var btnHome:LinearLayout
+    private lateinit var btnGame:LinearLayout
+    private lateinit var btnJournal:LinearLayout
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            AKILPUSULASITheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+        setContentView(R.layout.activity_main)
+
+        setupBottomNavigation(this, "home")
+
+        btnHome = findViewById(R.id.btnHome)
+        btnGame = findViewById(R.id.btnGame)
+        btnJournal = findViewById(R.id.btnJournal)
+
+        // Başlangıçta Ana Sayfa seçili
+        setSelectedButton(btnHome)
+
+        btnHome.setOnClickListener {
+            setSelectedButton(btnHome)
+            // Ana sayfa zaten burası
+        }
+
+        btnGame.setOnClickListener {
+            setSelectedButton(btnGame)
+            startActivity(Intent(this, GameActivity::class.java))
+        }
+
+        btnJournal.setOnClickListener {
+            setSelectedButton(btnJournal)
+            startActivity(Intent(this, JournalActivity::class.java))
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AKILPUSULASITheme {
-        Greeting("Android")
+    private fun setSelectedButton(selected: LinearLayout) {
+        btnHome.isSelected = false
+        btnGame.isSelected = false
+        btnJournal.isSelected = false
+        selected.isSelected = true
     }
 }
+
