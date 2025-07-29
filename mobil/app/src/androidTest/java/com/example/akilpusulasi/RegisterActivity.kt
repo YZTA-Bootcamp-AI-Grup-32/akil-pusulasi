@@ -39,7 +39,7 @@ class RegisterActivity : AppCompatActivity() {
                 Toast.makeText(this, "Kayıt başarılı 🎉 (Firebase henüz yok)", Toast.LENGTH_SHORT).show()
 
                 // Giriş ekranına dön
-                val intent = Intent(this, LoginActivity::class.java)
+                val intent = Intent(this, ProfileActivity::class.java)
                 startActivity(intent)
                 finish()
             } else {

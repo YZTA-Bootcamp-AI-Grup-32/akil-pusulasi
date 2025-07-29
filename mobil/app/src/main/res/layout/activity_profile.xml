@@ -1,0 +1,106 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_orange_blue">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center">
+
+        <TextView
+            android:text="Profilini Oluştur 💫"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <EditText
+            android:id="@+id/editTextName"
+            android:hint="🧑‍💼 Ad Soyad"
+            android:background="@drawable/input_background"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:textColor="#000" />
+
+        <EditText
+            android:id="@+id/editTextAge"
+            android:hint="🎂 Yaş"
+            android:inputType="number"
+            android:background="@drawable/input_background"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:textColor="#000"
+            android:layout_marginTop="12dp" />
+
+        <TextView
+            android:id="@+id/textViewInterestTitle"
+            android:layout_marginTop="16dp"
+            android:text="🧠 İlgi Alanlarını Seç:"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <CheckBox
+            android:id="@+id/checkbox1"
+            android:text="🧠 Zihin Egzersizleri"
+            android:textColor="#FFFFFF"
+            android:minHeight="48dp"
+            android:padding="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <CheckBox
+            android:id="@+id/checkbox2"
+            android:text="🧩 Hafıza Kartları"
+            android:textColor="#FFFFFF"
+            android:minHeight="48dp"
+            android:padding="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <CheckBox
+            android:id="@+id/checkbox3"
+            android:text="🎯 Odaklanma Oyunları"
+            android:textColor="#FFFFFF"
+            android:minHeight="48dp"
+            android:padding="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <CheckBox
+            android:id="@+id/checkbox4"
+            android:text="🔍 Dikkat Testleri"
+            android:textColor="#FFFFFF"
+            android:minHeight="48dp"
+            android:padding="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <CheckBox
+            android:id="@+id/checkbox5"
+            android:text="📓 Günlük Tutma"
+            android:textColor="#FFFFFF"
+            android:minHeight="48dp"
+            android:padding="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/buttonContinue"
+            android:text="Devam Et 🚀"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/button_glow"
+            android:textColor="#FFFFFF"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+</ScrollView>
