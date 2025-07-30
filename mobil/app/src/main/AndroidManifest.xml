@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Diğer aktivite: MainActivity -->
+        <!-- Diğer aktiviteler -->
         <activity
             android:name=".MainActivity"
             android:exported="false"
@@ -35,15 +35,15 @@
             android:exported="false"
             android:theme="@style/Theme.AKILPUSULASI" />
 
-
         <activity android:name=".ResetPasswordActivity" />
 
         <activity android:name=".ProfileActivity" />
 
         <activity android:name=".WelcomeActivity"/>
 
-
-
+        <activity android:name=".PatternMemoryActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AKILPUSULASI" />
 
     </application>
 

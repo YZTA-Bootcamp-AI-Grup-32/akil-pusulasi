@@ -40,25 +40,12 @@ class LoginActivity : AppCompatActivity() {
             passwordEditText.setSelection(passwordEditText.text.length)
         }
 
-        // Giriş Butonu tıklama listener
+        // Giriş Butonu tıklama listener - Direkt oyuna yönlendir
         loginButton.setOnClickListener {
-            val email = emailEditText.text.toString().trim()
-            val password = passwordEditText.text.toString()
-
-            if (email.isEmpty()) {
-                emailEditText.error = "E-posta giriniz"
-                emailEditText.requestFocus()
-                return@setOnClickListener
-            }
-
-            if (password.isEmpty()) {
-                passwordEditText.error = "Şifre giriniz"
-                passwordEditText.requestFocus()
-                return@setOnClickListener
-            }
-
-            // TODO: Firebase Authentication ile giriş işlemini buraya ekle
-            Toast.makeText(this, "Giriş denemesi: $email", Toast.LENGTH_SHORT).show()
+            // Direkt Pattern Memory oyununa yönlendir
+            val intent = Intent(this, PatternMemoryActivity::class.java)
+            startActivity(intent)
+            finish() // LoginActivity'yi kapat
         }
 
         // Şifremi unuttum tıklama
@@ -72,12 +59,11 @@ class LoginActivity : AppCompatActivity() {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
         }
+        
         // Şifremi unuttum tıklama
         forgotPasswordTextView.setOnClickListener {
             val intent = Intent(this, ResetPasswordActivity::class.java)
             startActivity(intent)
         }
-
-
     }
 }

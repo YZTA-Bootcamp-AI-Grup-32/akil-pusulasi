@@ -1,18 +1,17 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
-    id("com.google.gms.google-services")
+    // id("com.google.gms.google-services") // Firebase için geçici olarak devre dışı
 }
 
 android {
     namespace = "com.example.akilpusulasi"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.akilpusulasi"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -38,13 +37,16 @@ android {
     buildFeatures {
         compose = true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.8"
+    }
 }
 
 dependencies {
 
     implementation("com.airbnb.android:lottie:6.4.0")
-    implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
-    implementation("com.google.firebase:firebase-analytics")
+    // implementation(platform("com.google.firebase:firebase-bom:33.16.0")) // Firebase için geçici olarak devre dışı
+    // implementation("com.google.firebase:firebase-analytics") // Firebase için geçici olarak devre dışı
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
