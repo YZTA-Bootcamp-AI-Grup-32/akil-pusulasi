@@ -2,36 +2,24 @@ package com.example.akilpusulasi
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 
 class GameActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
 
+        // Set up the bottom navigation to show "Game" as selected
         setupBottomNavigation(this, "game")
 
-        // Alt navigasyon butonlarını tanımla
-        val btnHome = findViewById<LinearLayout>(R.id.btnHome)
-        val btnGame = findViewById<LinearLayout>(R.id.btnGame)
-        val btnJournal = findViewById<LinearLayout>(R.id.btnJournal)
+        // Find the card for the Pattern Memory game
+        val cardPatternMemory = findViewById<CardView>(R.id.cardPatternMemory)
 
-        // Ana sayfa butonu → MainActivity'e gider
-        btnHome.setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
-        }
-
-        // Günlük butonu → JournalActivity'e gider
-        btnJournal.setOnClickListener {
-            startActivity(Intent(this, JournalActivity::class.java))
-            finish()
-        }
-
-        // Oyun butonuna tıklanırsa → zaten bu sayfadasın, hiçbir şey yapma
-        btnGame.setOnClickListener {
-            // opsiyonel: kullanıcıya zaten buradasın diyebilirsin
+        // Set a click listener to start the PatternMemoryActivity
+        cardPatternMemory.setOnClickListener {
+            val intent = Intent(this, PatternMemoryActivity::class.java)
+            startActivity(intent)
         }
     }
 }
