@@ -5,8 +5,7 @@
             <gradient
                 android:startColor="#FFD580"
                 android:endColor="#ADD8E6"
-                android:angle="135" /> <!-- bu satırda kapanmalıydı -->
-
+                android:angle="135" /> 
         </shape>
     </item>
 </layer-list>

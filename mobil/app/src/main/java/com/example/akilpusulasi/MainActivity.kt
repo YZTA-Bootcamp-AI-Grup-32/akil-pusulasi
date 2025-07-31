@@ -1,7 +1,6 @@
 package com.example.akilpusulasi
 
 import android.content.Intent
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Button // Import Button
 import android.widget.LinearLayout
