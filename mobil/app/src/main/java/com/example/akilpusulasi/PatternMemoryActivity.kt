@@ -3,269 +3,223 @@ package com.example.akilpusulasi
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.GridLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import com.example.akilpusulasi.network.network.ApiClient
+import com.example.akilpusulasi.network.request.GameSessionCreateRequest
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.util.Random
-import kotlin.math.min
+import kotlin.math.sqrt
 
 class PatternMemoryActivity : AppCompatActivity() {
 
-    // Oyun sabitleri
+    // --- EXISTING GAME CONSTANTS (No Changes Needed) ---
     companion object {
-        const val INITIAL_ILLUMINATE_DELAY_MS: Long = 1200L // 1.2 saniye yanık kalma
-        const val MIN_ILLUMINATE_DELAY_MS: Long = 600L // 0.6 saniye minimum yanma
-        const val INITIAL_PAUSE_BETWEEN_CELLS_MS: Long = 500L // 0.5 saniye bekleme
-        const val MIN_PAUSE_BETWEEN_CELLS_MS: Long = 250L // 0.25 saniye minimum bekleme
-        const val DELAY_REDUCTION_PER_LEVEL_MS: Long = 35L // Her seviyede 35ms azalma (daha belirgin)
-        const val PAUSE_REDUCTION_PER_LEVEL_MS: Long = 18L // Her seviyede 18ms azalma (daha belirgin)
-        const val MAX_GAME_LEVEL: Int = 25 // Maksimum oyun seviyesi
+        const val MIN_ILLUMINATE_DELAY_MS: Long = 600L
+        const val MIN_PAUSE_BETWEEN_CELLS_MS: Long = 250L
     }
 
-    // Oyun durumu değişkenleri
-    private var currentLevel = 1 // Mevcut oyun seviyesi
-    private var gridSize = 3 // Izgaranın boyutu (örneğin 3x3 için 3)
-    private var cellsToIlluminate = 2 // Her seviyede yanacak hücre sayısı başlangıcı
+    // --- MODIFIED & NEW GAME STATE VARIABLES ---
+    private var currentLevel = 1
+    private var gridSize = 3 // Will be updated by API
+    private var cellsToIlluminate = 2 // Will be updated by API
 
-    // UI elemanları
+    // UI elements
     private lateinit var gridLayout: GridLayout
     private lateinit var tvInstructions: TextView
     private lateinit var tvLevel: TextView
     private lateinit var btnStartGame: Button
 
-    // Oyun mantığı için veri yapıları
-    private var pattern = mutableListOf<Int>() // AI tarafından oluşturulan yanan hücrelerin indeksleri
-    private var userSelection = mutableListOf<Int>() // Kullanıcının seçtiği hücrelerin indeksleri
-    private var currentPatternIndex = 0 // Kullanıcının şu anda beklenen pattern indeksi
+    // Game logic data structures
+    private var pattern = mutableListOf<Int>()
+    private var userSelection = mutableListOf<Int>()
 
-    // Oyunun çeşitli durumlarını kontrol eden flag'ler
-    private var isGameActive = false // Oyunun aktif olup olmadığını belirtir
-    private var isShowingPattern = false // Desenin gösterilip gösterilmediğini belirtir
-    private var canUserClick = false // Kullanıcının hücrelere tıklayıp tıklayamayacağını belirtir
-    private var isFirstGame = true // İlk oyun başlatma kontrolü
+    // Game state flags
+    private var isShowingPattern = false
+    private var canUserClick = false
 
-    // Izgaradaki tüm hücre butonlarını tutacak liste
     private val gridCells = mutableListOf<Button>()
 
-    // Renk referansları
+    // Color references
     private var defaultCellColor: Int = 0
     private var illuminatedCellColor: Int = 0
     private var selectedCellColor: Int = 0
     private var correctCellColor: Int = 0
     private var wrongCellColor: Int = 0
 
-    // Handler'ları temizlemek için
     private val handler = Handler(Looper.getMainLooper())
+
+    // --- NEW VARIABLES FOR BACKEND INTEGRATION ---
+    private lateinit var auth: FirebaseAuth
+    private var currentDifficultyLevel: Int = 1
+    private var sessionStartTime: Long = 0L // To calculate duration
+    private var patternDisplayTime: Long = 1200L // Will be updated by API
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pattern_memory)
 
-        // UI elemanlarını bağla
+        // --- NEW ---
+        auth = Firebase.auth
+
+        // UI element binding (No changes)
         gridLayout = findViewById(R.id.grid_layout)
         tvInstructions = findViewById(R.id.tv_instructions)
         tvLevel = findViewById(R.id.tv_level)
         btnStartGame = findViewById(R.id.btn_start_game)
 
-        // Renk referanslarını al (API uyumluluğu için ContextCompat kullan)
+        // Color references (No changes)
         defaultCellColor = ContextCompat.getColor(this, R.color.gray)
         illuminatedCellColor = ContextCompat.getColor(this, R.color.blue)
         selectedCellColor = ContextCompat.getColor(this, R.color.selected_purple)
         correctCellColor = ContextCompat.getColor(this, R.color.green)
         wrongCellColor = ContextCompat.getColor(this, R.color.red)
 
-        // Başlangıçta seviye metnini gizle
         tvLevel.visibility = View.GONE
-
-        // Başlat butonuna tıklama dinleyicisi ekle
         btnStartGame.setOnClickListener {
-            startGame()
+            // startGame() is now replaced with fetch and start
+            fetchGameParametersAndStart()
         }
-
-        // Izgarayı kur
-        setupGrid()
+        setupGrid() // Initial setup for display
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        // Tüm gecikmeli işlemleri temizle
         handler.removeCallbacksAndMessages(null)
     }
 
-    /**
-     * Izgarayı dinamik olarak oluşturur ve her hücreye tıklama dinleyicisi ekler
-     */
-    private fun setupGrid() {
-        // Önceki hücreleri temizle
-        gridLayout.removeAllViews()
-        gridCells.clear()
+    // --- MODIFIED: This is now the main entry point for starting a game ---
+    private fun fetchGameParametersAndStart() {
+        btnStartGame.isEnabled = false
+        btnStartGame.text = "Hazırlanıyor..."
 
-        // Grid boyutlarını ayarla
-        gridLayout.columnCount = gridSize
-        gridLayout.rowCount = gridSize
+        lifecycleScope.launch {
+            try {
+                val currentUser = auth.currentUser
+                    ?: throw IllegalStateException("User not logged in.")
+                val token = currentUser.getIdToken(true).await().token
+                    ?: throw IllegalStateException("Could not get auth token.")
 
-        // Hücre boyutunu hesapla (minimum boyut garantisi ile)
-        val screenWidth = resources.displayMetrics.widthPixels
-        val density = resources.displayMetrics.density
-        val availableWidth = screenWidth - (64 * density).toInt() // Padding ve margin için alan bırak
-        val minCellSize = (80 * density).toInt() // Minimum 80dp
-        val cellSize = maxOf(availableWidth / gridSize, minCellSize)
+                val authHeader = "Bearer $token"
+                val response = ApiClient.instance.getNewGameParameters(authHeader)
 
-        // Her bir hücre için buton oluştur
-        for (i in 0 until gridSize * gridSize) {
-            val button = Button(this)
-            
-            // Layout parametrelerini ayarla
-            val params = GridLayout.LayoutParams()
-            params.width = cellSize
-            params.height = cellSize
-            params.setMargins(4, 4, 4, 4)
-            button.layoutParams = params
+                if (response.isSuccessful && response.body() != null) {
+                    val params = response.body()!!
+                    Log.d("PatternMemory", "Received params: $params")
 
-            // Butonun arka plan rengini ayarla
-            button.setBackgroundColor(defaultCellColor)
+                    // Update game state with parameters from the backend
+                    currentDifficultyLevel = params.difficultyLevel
+                    currentLevel = params.difficultyLevel // Sync local level with backend difficulty
+                    cellsToIlluminate = params.patternSize
+                    patternDisplayTime = params.displayTimeMs.toLong()
 
-            // Tıklama dinleyicisi ekle
-            button.setOnClickListener {
-                if (canUserClick && !isShowingPattern) {
-                    onCellClicked(i)
+                    // The backend sends total cells (9, 16), we need the side length (3, 4)
+                    val side = sqrt(params.gridSize.toDouble()).toInt()
+                    if (gridSize != side) {
+                        gridSize = side
+                        setupGrid() // Re-create the grid if size changed
+                    }
+
+                    // Now start the actual game round
+                    startRound()
+
+                } else {
+                    Log.e("PatternMemory", "API Error: ${response.code()} - ${response.errorBody()?.string()}")
+                    Toast.makeText(this@PatternMemoryActivity, "Oyun başlatılamadı. Sunucu hatası.", Toast.LENGTH_LONG).show()
+                    resetUIForNewGame()
                 }
-            }
 
-            // Butonu ızgaraya ekle ve listeye kaydet
-            gridLayout.addView(button)
-            gridCells.add(button)
+            } catch (e: Exception) {
+                Log.e("PatternMemory", "Exception fetching game params", e)
+                Toast.makeText(this@PatternMemoryActivity, "Hata: ${e.message}", Toast.LENGTH_LONG).show()
+                resetUIForNewGame()
+            }
         }
     }
 
-    /**
-     * Oyunu başlatır
-     */
-    private fun startGame() {
-        // Her oyun başlangıcında tüm parametreleri sıfırla
-        currentLevel = 1
-        gridSize = 3
-        cellsToIlluminate = 2
-        isFirstGame = false
-
-        // Seviye metnini göster ve güncelle
-        tvLevel.visibility = View.VISIBLE
+    // --- NEW: This function handles starting a single round/level ---
+    private fun startRound() {
+        resetRoundState()
         updateLevelText()
-        
-        // Zorluk parametrelerini güncelle (grid boyutu 3x3 olarak ayarlanacak)
-        updateDifficultyParameters()
-        
-        // Izgarayı kesinlikle yeniden kur (3x3 olarak)
-        setupGrid()
-        
-        // Oyun durumunu sıfırla
-        resetGame()
-
-        // Kısa bir hazırlık süresi sonra deseni göster
+        tvLevel.visibility = View.VISIBLE
+        // Short delay before showing the pattern
         handler.postDelayed({ generateAndShowPattern() }, 800)
     }
 
-    /**
-     * Oyun durumunu yeni bir tur veya seviye için sıfırlar
-     */
-    private fun resetGame() {
-        isGameActive = true
+    // Renamed from resetGame to resetRoundState for clarity
+    private fun resetRoundState() {
         canUserClick = false
         userSelection.clear()
         pattern.clear()
-        currentPatternIndex = 0
 
         tvInstructions.text = getString(R.string.remember_pattern)
         btnStartGame.visibility = View.GONE
 
-        // Tüm hücrelerin rengini varsayılana döndür
         for (cell in gridCells) {
             cell.setBackgroundColor(defaultCellColor)
         }
     }
 
-    /**
-     * Seviye metnini günceller
-     */
-    private fun updateLevelText() {
-        tvLevel.text = "Seviye: $currentLevel"
-    }
+    // --- NEW: Sends the game result to the backend ---
+    private fun sendGameResult(score: Int) {
+        val durationSeconds = ((System.currentTimeMillis() - sessionStartTime) / 1000).toInt()
 
-    /**
-     * Current level'a göre zorluk parametrelerini dinamik olarak ayarlar
-     */
-    private fun updateDifficultyParameters() {
-        // Mevcut grid boyutunu kaydet
-        val oldGridSize = gridSize
-        
-        when (currentLevel) {
-            in 1..3 -> {
-                gridSize = 3
-                cellsToIlluminate = 2
+        val request = GameSessionCreateRequest(
+            gameName = "Pattern Memory",
+            score = score,
+            durationSeconds = durationSeconds,
+            difficultyLevel = currentDifficultyLevel
+        )
+
+        // Launch a background coroutine to send data. We don't need to wait for the result.
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val token = auth.currentUser?.getIdToken(false)?.await()?.token ?: return@launch
+                val authHeader = "Bearer $token"
+                val response = ApiClient.instance.createGameSession(authHeader, request)
+                if (response.isSuccessful) {
+                    Log.d("PatternMemory", "Game session logged successfully for level $currentDifficultyLevel")
+                } else {
+                    Log.e("PatternMemory", "Failed to log game session: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("PatternMemory", "Exception logging game session", e)
             }
-            in 4..6 -> {
-                gridSize = 3
-                cellsToIlluminate = 3
-            }
-            in 7..9 -> {
-                gridSize = 4
-                cellsToIlluminate = 3
-            }
-            in 10..12 -> {
-                gridSize = 4
-                cellsToIlluminate = 4
-            }
-            in 13..15 -> {
-                gridSize = 4
-                cellsToIlluminate = 5
-            }
-            in 16..18 -> {
-                gridSize = 5
-                cellsToIlluminate = 5
-            }
-            in 19..21 -> {
-                gridSize = 5
-                cellsToIlluminate = 6
-            }
-            in 22..MAX_GAME_LEVEL -> {
-                gridSize = 5
-                cellsToIlluminate = 7
-            }
-        }
-        
-        // Grid boyutu değiştiyse veya grid henüz oluşturulmadıysa ızgarayı yeniden oluştur
-        if (oldGridSize != gridSize || gridLayout.columnCount != gridSize) {
-            setupGrid()
         }
     }
 
-    /**
-     * Rastgele desen oluşturur ve görsel olarak gösterir
-     */
+
     private fun generateAndShowPattern() {
-        pattern.clear()
         isShowingPattern = true
         canUserClick = false
+        pattern.clear()
 
-        // Dinamik süre hesaplaması - yaşlı kullanıcılar için yavaş azalma
-        val reductionFactor = currentLevel - 1 // Seviye ilerledikçe artan faktör
-        
-        val currentIlluminateDelay = maxOf(
-            INITIAL_ILLUMINATE_DELAY_MS - (reductionFactor * DELAY_REDUCTION_PER_LEVEL_MS),
-            MIN_ILLUMINATE_DELAY_MS
-        )
+        // --- NEW: Record the start time for this level ---
+        sessionStartTime = System.currentTimeMillis()
+
+        // Dynamic pause calculation (can be simplified as display time is now from backend)
         val currentPauseBetweenCells = maxOf(
-            INITIAL_PAUSE_BETWEEN_CELLS_MS - (reductionFactor * PAUSE_REDUCTION_PER_LEVEL_MS),
+            patternDisplayTime / 4, // A reasonable fraction of the display time
             MIN_PAUSE_BETWEEN_CELLS_MS
         )
 
-        // Rastgele desen oluştur
+        // Generate random pattern (No changes)
         val random = Random()
         val availableIndices = (0 until gridSize * gridSize).toMutableList()
-
         for (i in 0 until cellsToIlluminate) {
             if (availableIndices.isNotEmpty()) {
                 val randomIndex = random.nextInt(availableIndices.size)
@@ -275,86 +229,46 @@ class PatternMemoryActivity : AppCompatActivity() {
             }
         }
 
-        // Tane tane yanma efekti ile deseni göster
-        showPatternWithDelay(currentIlluminateDelay, currentPauseBetweenCells)
+        // Show pattern with delay (using backend display time)
+        showPatternWithDelay(patternDisplayTime, currentPauseBetweenCells)
     }
 
-    /**
-     * Deseni gecikmeli olarak gösterir - sırayla yanıp sönme akışı ile
-     */
-    private fun showPatternWithDelay(illuminateDelay: Long, pauseBetweenCells: Long) {
-        // Her kutucuk için toplam döngü süresi: yanma + bekleme
-        val totalCycleTime = illuminateDelay + pauseBetweenCells
-        
-        for ((index, cellIndex) in pattern.withIndex()) {
-            // Array bounds kontrolü
-            if (cellIndex < gridCells.size) {
-                // Her kutucuğun başlangıç zamanı: önceki kutucukların toplam döngü süresi
-                val startTime = index * totalCycleTime
-                
-                // Kutucuğu yak
-                handler.postDelayed({
-                    gridCells[cellIndex].setBackgroundColor(illuminatedCellColor)
-                }, startTime)
+    private fun checkPattern() {
+        canUserClick = false
+        val isCorrect = userSelection == pattern
 
-                // Kutucuğu söndür (yanma süresi sonunda)
-                handler.postDelayed({
-                    gridCells[cellIndex].setBackgroundColor(defaultCellColor)
-                }, startTime + illuminateDelay)
+        if (isCorrect) {
+            // --- NEW: Log successful result to backend ---
+            // Score can be the level number completed.
+            sendGameResult(score = currentLevel)
+
+            tvInstructions.text = "Doğru! Sonraki seviye..."
+            for (index in pattern) {
+                if (index < gridCells.size) {
+                    gridCells[index].setBackgroundColor(correctCellColor)
+                }
             }
-        }
 
-        // Desen gösterimi bittikten sonra kullanıcıya tıklama izni ver
-        // Son kutucuğun döngüsü tamamlandıktan sonra ek bekleme süresi
-        val totalPatternTime = pattern.size * totalCycleTime + 500L
-        handler.postDelayed({
-            isShowingPattern = false
-            canUserClick = true
-            currentPatternIndex = 0 // Sıra kontrolü için indeksi sıfırla
-            tvInstructions.text = getString(R.string.now_click)
-        }, totalPatternTime)
-    }
+            // Fetch parameters for the NEXT level
+            handler.postDelayed({ fetchGameParametersAndStart() }, 1500)
 
-    /**
-     * Kullanıcının bir hücreye tıkladığında çağrılır
-     */
-    private fun onCellClicked(index: Int) {
-        // Tıklama kontrolü
-        if (!canUserClick || isShowingPattern || index >= gridCells.size) {
-            return
-        }
-
-        // Sıralama kontrolü - kullanıcı doğru sırayla tıklamalı
-        if (userSelection.size < pattern.size && index == pattern[userSelection.size]) {
-            // Doğru sırada doğru hücreye tıklandı
-            userSelection.add(index)
-            gridCells[index].setBackgroundColor(selectedCellColor)
-
-            // Kullanıcı tüm deseni doğru sırayla girdi mi kontrol et
-            if (userSelection.size == pattern.size) {
-                // Son tıklamanın görsel geri bildirimini göster
-                handler.postDelayed({
-                    checkPattern()
-                }, 500)
-            }
         } else {
-            // Yanlış sıra veya yanlış hücre - oyun biter
-            wrongSequence(index)
+            // This part of the original code was unreachable due to early exit in onCellClicked.
+            // The logic is now handled in wrongSequence.
         }
     }
 
-    /**
-     * Yanlış sıra durumunda çağrılır
-     */
     private fun wrongSequence(wrongIndex: Int) {
         canUserClick = false
-        tvInstructions.text = "Yanlış! Oyun Bitti."
-        isGameActive = false
+        isShowingPattern = false
 
-        // Yanlış seçilen hücreyi kısa süreliğine vurgula
+        // --- NEW: Log failed result to backend. We can use a score of 0 for failure.
+        sendGameResult(score = 0)
+
+        tvInstructions.text = "Yanlış! Oyun Bitti."
         gridCells[wrongIndex].setBackgroundColor(wrongCellColor)
 
-        // Doğru deseni kısa süreliğine göster
+        // Show correct pattern
         handler.postDelayed({
             for (index in pattern) {
                 if (index < gridCells.size) {
@@ -363,102 +277,82 @@ class PatternMemoryActivity : AppCompatActivity() {
             }
         }, 500)
 
+        // Reset UI to allow starting a new game
         handler.postDelayed({
-            for (index in pattern) {
-                if (index < gridCells.size) {
-                    gridCells[index].setBackgroundColor(defaultCellColor)
-                }
-            }
-            tvLevel.visibility = View.GONE
-            btnStartGame.text = getString(R.string.restart_game)
-            btnStartGame.visibility = View.VISIBLE
+            resetUIForNewGame()
         }, 2000)
     }
 
-    /**
-     * Kullanıcının seçimini kontrol eder
-     */
-    private fun checkPattern() {
-        canUserClick = false
+    private fun resetUIForNewGame() {
+        for (cell in gridCells) {
+            cell.setBackgroundColor(defaultCellColor)
+        }
+        tvLevel.visibility = View.GONE
+        tvInstructions.text = "Tekrar denemeye hazır mısın?"
+        btnStartGame.text = getString(R.string.restart_game)
+        btnStartGame.visibility = View.VISIBLE
+        btnStartGame.isEnabled = true
+    }
 
-        // Kullanıcının seçimi ile orijinal deseni karşılaştır
-        val isCorrect = userSelection == pattern // Sıra da önemli olduğu için == kullanıyoruz
+    // --- UNCHANGED HELPER FUNCTIONS ---
+    private fun updateLevelText() {
+        tvLevel.text = "Seviye: $currentLevel"
+    }
 
-        if (isCorrect) {
-            // Doğru cevap
-            tvInstructions.text = "Doğru! Sonraki seviye..."
-            
-            // Seviyeyi artır
-            currentLevel++
-            
-            // Maksimum seviye kontrolü
-            if (currentLevel > MAX_GAME_LEVEL) {
-                tvInstructions.text = "Tebrikler! Oyunu Tamamladınız!"
-                tvLevel.visibility = View.GONE
-                btnStartGame.text = getString(R.string.restart_game)
-                btnStartGame.visibility = View.VISIBLE
-                isGameActive = false
-                return
+    private fun onCellClicked(index: Int) {
+        if (!canUserClick || isShowingPattern || index >= gridCells.size) return
+
+        if (userSelection.size < pattern.size && index == pattern[userSelection.size]) {
+            userSelection.add(index)
+            gridCells[index].setBackgroundColor(selectedCellColor)
+
+            if (userSelection.size == pattern.size) {
+                handler.postDelayed({ checkPattern() }, 300)
             }
-
-            // Doğru cevapta yeşil vurgu
-            for (index in pattern) {
-                if (index < gridCells.size) {
-                    gridCells[index].setBackgroundColor(correctCellColor)
-                }
-            }
-
-            // 1000ms sonra yeni seviyeye geç
-            handler.postDelayed({
-                // Tüm hücreleri varsayılan renge döndür
-                for (index in pattern) {
-                    if (index < gridCells.size) {
-                        gridCells[index].setBackgroundColor(defaultCellColor)
-                    }
-                }
-                
-                // Zorluk parametrelerini güncelle
-                updateDifficultyParameters()
-                updateLevelText()
-                
-                // Oyun durumunu sıfırla
-                resetGame()
-                
-                // Yeni deseni göster
-                handler.postDelayed({ generateAndShowPattern() }, 800)
-            }, 1000)
-
         } else {
-            // Yanlış cevap
-            tvInstructions.text = getString(R.string.wrong_answer)
-            isGameActive = false
-
-            // Yanlış seçilen hücreleri kısa süreliğine vurgula
-            for (index in userSelection) {
-                if (index < gridCells.size) {
-                    gridCells[index].setBackgroundColor(wrongCellColor)
-                }
-            }
-
-            // Doğru deseni kısa süreliğine göster
-            handler.postDelayed({
-                for (index in pattern) {
-                    if (index < gridCells.size) {
-                        gridCells[index].setBackgroundColor(correctCellColor)
-                    }
-                }
-            }, 500)
-
-            handler.postDelayed({
-                for (index in pattern) {
-                    if (index < gridCells.size) {
-                        gridCells[index].setBackgroundColor(defaultCellColor)
-                    }
-                }
-                tvLevel.visibility = View.GONE
-                btnStartGame.text = getString(R.string.restart_game)
-                btnStartGame.visibility = View.VISIBLE
-            }, 2000)
+            wrongSequence(index)
         }
     }
-} 
+
+    private fun setupGrid() {
+        gridLayout.removeAllViews()
+        gridCells.clear()
+        gridLayout.columnCount = gridSize
+        gridLayout.rowCount = gridSize
+        val screenWidth = resources.displayMetrics.widthPixels
+        val density = resources.displayMetrics.density
+        val availableWidth = screenWidth - (64 * density).toInt()
+        val minCellSize = (80 * density).toInt()
+        val cellSize = maxOf(availableWidth / gridSize, minCellSize)
+        for (i in 0 until gridSize * gridSize) {
+            val button = Button(this).apply {
+                layoutParams = GridLayout.LayoutParams().apply {
+                    width = cellSize
+                    height = cellSize
+                    setMargins(4, 4, 4, 4)
+                }
+                setBackgroundColor(defaultCellColor)
+                setOnClickListener { if (canUserClick && !isShowingPattern) onCellClicked(i) }
+            }
+            gridLayout.addView(button)
+            gridCells.add(button)
+        }
+    }
+
+    private fun showPatternWithDelay(illuminateDelay: Long, pauseBetweenCells: Long) {
+        val totalCycleTime = illuminateDelay + pauseBetweenCells
+        for ((index, cellIndex) in pattern.withIndex()) {
+            if (cellIndex < gridCells.size) {
+                val startTime = index * totalCycleTime
+                handler.postDelayed({ gridCells[cellIndex].setBackgroundColor(illuminatedCellColor) }, startTime)
+                handler.postDelayed({ gridCells[cellIndex].setBackgroundColor(defaultCellColor) }, startTime + illuminateDelay)
+            }
+        }
+        val totalPatternTime = pattern.size * totalCycleTime + 500L
+        handler.postDelayed({
+            isShowingPattern = false
+            canUserClick = true
+            tvInstructions.text = getString(R.string.now_click)
+        }, totalPatternTime)
+    }
+}
