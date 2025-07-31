@@ -11,6 +11,15 @@
     <string name="interest_5">Günlük Tutma</string>
     <string name="button_continue">Devam Et 🧠</string>
     <string name="welcome_message">Hoş geldin %1$s! 💖&#10;İlgi alanın: %2$s 🧠</string>
-
+    
+    <!-- Pattern Memory Oyunu String'leri -->
+    <string name="pattern_memory_title">Pattern Memory Oyunu</string>
+    <string name="remember_pattern">Deseni Hatırla!</string>
+    <string name="now_click">Şimdi Tıkla!</string>
+    <string name="correct_answer">Doğru! Sonraki seviye...</string>
+    <string name="wrong_answer">Yanlış! Oyun Bitti.</string>
+    <string name="start_game">Oyuna Başla</string>
+    <string name="restart_game">Tekrar Başla</string>
+    <string name="level_text">Seviye: %1$d</string>
 
 </resources>

@@ -56,7 +56,7 @@ class LoginActivity : AppCompatActivity() {
             passwordEditText.setSelection(passwordEditText.text.length)
         }
 
-        // Giriş Butonu tıklama listener
+        // Giriş Butonu tıklama listener - Direkt oyuna yönlendir
         loginButton.setOnClickListener {
             val email = emailEditText.text.toString().trim()
             val password = passwordEditText.text.toString()
@@ -95,12 +95,11 @@ class LoginActivity : AppCompatActivity() {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
         }
+        
         // Şifremi unuttum tıklama
         forgotPasswordTextView.setOnClickListener {
             val intent = Intent(this, ResetPasswordActivity::class.java)
             startActivity(intent)
         }
-
-
     }
 }

@@ -1,16 +1,16 @@
 [versions]
-agp = "8.10.1"
-kotlin = "2.0.21"
-coreKtx = "1.16.0"
+agp = "8.6.0"
+kotlin = "1.9.22"
+coreKtx = "1.12.0"
 junit = "4.13.2"
-junitVersion = "1.2.1"
-espressoCore = "3.6.1"
-lifecycleRuntimeKtx = "2.9.1"
-activityCompose = "1.10.1"
-composeBom = "2024.09.00"
+junitVersion = "1.1.5"
+espressoCore = "3.5.1"
+lifecycleRuntimeKtx = "2.7.0"
+activityCompose = "1.8.2"
+composeBom = "2024.01.00"
 appcompat = "1.6.1"
-material = "1.12.0"
-activity = "1.10.1"
+material = "1.11.0"
+activity = "1.8.2"
 constraintlayout = "2.1.4"
 material3 = "1.2.1"
 firebaseAuthKtx = "24.0.0"
@@ -40,5 +40,4 @@ firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx",
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
