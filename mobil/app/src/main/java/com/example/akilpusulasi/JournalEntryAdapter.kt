@@ -3,20 +3,18 @@ package com.example.akilpusulasi
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import android.content.Intent
-import android.widget.Button
-
-
 
 class JournalEntryAdapter(private val entries: List<JournalEntry>) :
     RecyclerView.Adapter<JournalEntryAdapter.JournalViewHolder>() {
 
     class JournalViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val moodText: TextView = itemView.findViewById(R.id.moodTextView)
         val journalText: TextView = itemView.findViewById(R.id.journalTextView)
         val dateText: TextView = itemView.findViewById(R.id.dateTextView)
+        val aiResponseLayout: LinearLayout = itemView.findViewById(R.id.aiResponseLayout)
+        val aiResponseText: TextView = itemView.findViewById(R.id.aiResponseTextView)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): JournalViewHolder {
@@ -27,14 +25,15 @@ class JournalEntryAdapter(private val entries: List<JournalEntry>) :
 
     override fun onBindViewHolder(holder: JournalViewHolder, position: Int) {
         val entry = entries[position]
-        holder.moodText.text = entry.mood
-        holder.journalText.text = entry.text
+        holder.journalText.text = entry.content
         holder.dateText.text = entry.date
-        holder.itemView.findViewById<Button>(R.id.backToJournalButton).setOnClickListener {
-            val intent = Intent(holder.itemView.context, JournalActivity::class.java)
-            holder.itemView.context.startActivity(intent)
-        }
 
+        if (!entry.aiResponse.isNullOrBlank()) {
+            holder.aiResponseText.text = entry.aiResponse
+            holder.aiResponseLayout.visibility = View.VISIBLE
+        } else {
+            holder.aiResponseLayout.visibility = View.GONE
+        }
     }
 
     override fun getItemCount(): Int = entries.size

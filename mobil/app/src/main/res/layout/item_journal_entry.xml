@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -8,44 +7,66 @@
     android:orientation="vertical"
     android:layout_marginBottom="12dp">
 
+    <!-- Date -->
     <TextView
         android:id="@+id/dateTextView"
         android:layout_width="wrap_content"
-        android:layout_height="27dp"
-        android:layout_marginTop="4dp"
-        android:text="2025-07-31"
-        android:textColor="#888"
-        android:textSize="12sp" />
-
-    <TextView
-        android:id="@+id/moodTextView"
-        android:layout_width="41dp"
         android:layout_height="wrap_content"
-        android:text="😄"
-        android:textSize="24sp" />
+        android:text="31 Temmuz 2025"
+        android:textColor="#666"
+        android:textSize="12sp"
+        android:layout_marginBottom="8dp" />
 
+    <!-- User's Journal Text -->
     <TextView
         android:id="@+id/journalTextView"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_marginTop="4dp"
-        android:text="Günlük metni burada"
-        android:textSize="16sp" />
+        android:layout_height="wrap_content"
+        android:text="Kullanıcının yazdığı günlük metni burada görünecek."
+        android:textColor="#333"
+        android:textSize="16sp"
+        android:lineSpacingExtra="4dp" />
 
-    <Button
-        android:id="@+id/backToJournalButton"
+    <!-- AI Response Section -->
+    <LinearLayout
+        android:id="@+id/aiResponseLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text=" Günlüğüne Dön"
-        android:textColor="#fff"
-        android:textSize="16sp"
-        android:backgroundTint="#8E44AD"
+        android:orientation="vertical"
+        android:background="#F0F4FF"
+        android:padding="12dp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="4dp"
-        android:textAllCaps="false"
-        android:padding="10dp"
-        android:elevation="4dp" />
+        android:visibility="gone"> <!-- Initially hidden -->
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🤖 Akıl Pusulası'nın Yorumu"
+            android:textStyle="bold"
+            android:textColor="#1E40AF"
+            android:textSize="14sp"
+            android:layout_marginBottom="6dp"/>
 
+        <TextView
+            android:id="@+id/aiResponseTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="AI'dan gelen yanıt burada yer alacak."
+            android:textColor="#374151"
+            android:textSize="15sp"
+            android:lineSpacingExtra="3dp" />
+    </LinearLayout>
+
+    <!-- This button seems to navigate back, which is unusual for a list item.
+         We'll leave it for now but you might want to remove it later. -->
+    <Button
+        android:id="@+id/backToJournalButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Detaylar"
+        android:visibility="gone"
+        android:textColor="#fff"
+        android:backgroundTint="#8E44AD"
+        android:layout_marginTop="16dp"/>
 
 </LinearLayout>

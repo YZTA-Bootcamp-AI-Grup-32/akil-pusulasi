@@ -1,7 +1,8 @@
 package com.example.akilpusulasi
 
 data class JournalEntry(
-    val text: String,
-    val mood: String,
-    val date: String
+    val id: String,
+    val content: String,
+    val date: String,
+    val aiResponse: String?
 )
