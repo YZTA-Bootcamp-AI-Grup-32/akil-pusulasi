@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rounded_edittext"
+    android:padding="16dp"
+    android:orientation="vertical"
+    android:layout_marginBottom="12dp">
+
+    <TextView
+        android:id="@+id/dateTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="27dp"
+        android:layout_marginTop="4dp"
+        android:text="2025-07-31"
+        android:textColor="#888"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/moodTextView"
+        android:layout_width="41dp"
+        android:layout_height="wrap_content"
+        android:text="😄"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/journalTextView"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="4dp"
+        android:text="Günlük metni burada"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/backToJournalButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=" Günlüğüne Dön"
+        android:textColor="#fff"
+        android:textSize="16sp"
+        android:backgroundTint="#8E44AD"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="4dp"
+        android:textAllCaps="false"
+        android:padding="10dp"
+        android:elevation="4dp" />
+
+
+
+</LinearLayout>
