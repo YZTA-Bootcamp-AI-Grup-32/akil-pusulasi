@@ -53,6 +53,10 @@
         <activity android:name=".GameActivity" />
         <activity android:name=".JournalActivity" />
 
+        <activity android:name=".PatternMemoryActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AKILPUSULASI" />
+
 
     </application>
 
