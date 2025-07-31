@@ -6,6 +6,15 @@
     android:padding="16dp"
     android:background="#F8F9FA">
 
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Çıkış Yap (Test)"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="8dp"/>
+
     <!-- Başlık -->
     <TextView
         android:id="@+id/tvTitle"
