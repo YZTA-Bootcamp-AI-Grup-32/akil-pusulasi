@@ -4,6 +4,9 @@ import com.example.akilpusulasi.network.request.CreateUserRequest
 import com.example.akilpusulasi.network.request.GameSessionCreateRequest
 import com.example.akilpusulasi.network.response.GameParametersResponse
 import com.example.akilpusulasi.network.response.UserResponse
+// Add these new imports
+import com.example.akilpusulasi.network.request.DailyJournalCreateRequest
+import com.example.akilpusulasi.network.response.DailyJournalResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -12,25 +15,36 @@ import retrofit2.http.POST
 
 interface ApiService {
 
-    @POST("/api/v1/users/create") // Match the path in your FastAPI router
+    @POST("/api/v1/users/create")
     suspend fun createUser(
         @Header("Authorization") token: String,
         @Body request: CreateUserRequest
-    ): Response<Unit> // We don't expect a body back, just a success code (e.g. 201)
+    ): Response<Unit>
 
-    @POST("/api/v1/game-sessions") // Path from your backend router
+    @POST("/api/v1/game-sessions")
     suspend fun createGameSession(
         @Header("Authorization") token: String,
         @Body request: GameSessionCreateRequest
-    ): Response<Unit> // Backend returns a message, we just need the success code.
+    ): Response<Unit>
 
-    @GET("/api/v1/new-session-parameters") // Path from your backend router
+    @GET("/api/v1/new-session-parameters")
     suspend fun getNewGameParameters(
         @Header("Authorization") token: String
     ): Response<GameParametersResponse>
 
-    @GET("/api/v1/users/me") // Path from your backend router
+    @GET("/api/v1/users/me")
     suspend fun getMyProfile(
         @Header("Authorization") token: String
-    ): Response<UserResponse> // We expect a UserResponse object on success
+    ): Response<UserResponse>
+
+    @POST("/api/v1/journals")
+    suspend fun createJournal(
+        @Header("Authorization") token: String,
+        @Body request: DailyJournalCreateRequest
+    ): Response<DailyJournalResponse>
+
+    @GET("/api/v1/journals")
+    suspend fun getMyJournals(
+        @Header("Authorization") token: String
+    ): Response<List<DailyJournalResponse>>
 }
