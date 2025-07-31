@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Buton disable olduğunda açık kırmızı -->
+    <item android:state_enabled="false" android:color="#E2A5FCEE"/>
+
+    <!-- Butona basıldığında koyu kırmızı -->
+    <item android:state_pressed="true" android:color="#BE26A2DC"/>
+
+    <!-- Normal durum -->
+    <item android:color="#CF44B3EF"/>
+</selector>

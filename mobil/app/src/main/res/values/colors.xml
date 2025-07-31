@@ -7,4 +7,9 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- İstersen bu isimleri kullan: -->
+    <color name="brand_accent">#44D8EF</color>
+    <color name="brand_accent_pressed">#26ABDC</color>
+    <color name="brand_accent_disabled">#B3EAF6</color>
 </resources>
