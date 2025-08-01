@@ -35,9 +35,9 @@
 
         <!-- İstatistik Container -->
         <androidx.cardview.widget.CardView
-            android:id="@+id/statisticsCard"
+            android:id="@+id/gameScoresCard"
             android:layout_width="match_parent"
-            android:layout_height="180dp"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="8dp"
@@ -48,42 +48,39 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:gravity="center"
                 android:orientation="vertical"
-                android:padding="16dp">
-
-                <View
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:background="@drawable/circle_blue_gradient"
-                    android:layout_marginBottom="12dp" />
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="İstatistik Alanı"
-                    android:textSize="16sp"
+                    android:text="🎮 Son 5 Oyun Skoru"
+                    android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#333333"
-                    android:fontFamily="@font/orbitron_bold"/>
+                    android:textColor="#1E40AF"
+                    android:fontFamily="@font/orbitron_bold"
+                    android:layout_marginBottom="16dp"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Verileriniz burada görünecek"
-                    android:textSize="12sp"
-                    android:textColor="#666666"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/orbitron_bold"/>
+                    android:scrollbars="none">
 
+                    <LinearLayout
+                        android:id="@+id/scoresLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" />
+                </HorizontalScrollView>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+
         <!-- AI Yorum Container -->
         <androidx.cardview.widget.CardView
-            android:id="@+id/aiCommentCard"
+            android:id="@+id/aiAndStreakCard"
             android:layout_width="match_parent"
-            android:layout_height="180dp"
+            android:layout_height="wrap_content"
             app:cardCornerRadius="16dp"
             app:cardElevation="8dp"
             app:cardBackgroundColor="#FFFFFF"
@@ -93,33 +90,30 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:gravity="center"
                 android:orientation="vertical"
-                android:padding="16dp">
-
-                <View
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:background="@drawable/circle_purple_gradient"
-                    android:layout_marginBottom="12dp" />
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="AI Yorum Alanı"
-                    android:textSize="16sp"
+                    android:text="🤖 Akıl Pusulası'nın Yorumu"
+                    android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#333333"
-                    android:fontFamily="@font/orbitron_bold"/>
+                    android:textColor="#1E40AF"
+                    android:fontFamily="@font/orbitron_bold"
+                    android:layout_marginBottom="16dp"/>
 
+                <!-- Journal Streak -->
                 <TextView
+                    android:id="@+id/tvJournalStreak"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="AI analizleri burada görünecek"
-                    android:textSize="12sp"
-                    android:textColor="#666666"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/orbitron_bold"/>
+                    android:text="Günlük Serisi: Yükleniyor..."
+                    android:textSize="16sp"
+                    android:textColor="#333333"
+                    android:drawablePadding="8dp"
+                    app:drawableStartCompat="@drawable/ic_journal"
+                    app:drawableTint="#8E44AD" />
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -127,6 +121,14 @@
         <!-- ... title ve contentArea burada ... -->
 
 
+        <ProgressBar
+            android:id="@+id/statsProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="24dp"
+            android:visibility="gone" />
+            
     </LinearLayout>
 
     <!-- Alt Navigasyon Container -->
