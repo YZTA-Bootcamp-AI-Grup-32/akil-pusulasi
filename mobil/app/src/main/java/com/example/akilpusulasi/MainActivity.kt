@@ -1,12 +1,12 @@
 package com.example.akilpusulasi
 
-import android.R.attr.textStyle
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
 import android.view.View
-import android.widget.Button // Import Button
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -16,23 +16,21 @@ import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.akilpusulasi.network.network.ApiClient
+import com.example.akilpusulasi.network.response.GameScoreData
 import com.example.akilpusulasi.network.response.UserStatsResponse
-import com.google.firebase.auth.ktx.auth // Import auth
-import com.google.firebase.ktx.Firebase // Import Firebase
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
+import com.github.mikephil.charting.charts.Chart
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.AxisBase
+import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.components.XAxis
-import android.graphics.Color
-import com.github.mikephil.charting.utils.Utils
-import android.graphics.Paint
-import com.github.mikephil.charting.charts.Chart
-
-
-
+import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class MainActivity : AppCompatActivity() {
     private lateinit var btnHome: LinearLayout
@@ -48,8 +46,8 @@ class MainActivity : AppCompatActivity() {
     // --- New visibility controls ---
     private lateinit var gameScoresCard: CardView
     private lateinit var aiAndStreakCard: CardView
+    private lateinit var scoreChartCard: CardView
     private lateinit var lineChart: LineChart
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,10 +65,9 @@ class MainActivity : AppCompatActivity() {
         scoresLayout = findViewById(R.id.scoresLayout)
         gameScoresCard = findViewById(R.id.gameScoresCard)
         aiAndStreakCard = findViewById(R.id.aiAndStreakCard)
-        lineChart = findViewById(R.id.scoreLineChart)
+        scoreChartCard = findViewById(R.id.scoreChartCard)
         lineChart = findViewById(R.id.scoreLineChart)
 
-        drawTestChart()
         setSelectedButton(btnHome)
 
         btnLogout.setOnClickListener {
@@ -110,6 +107,7 @@ class MainActivity : AppCompatActivity() {
             statsProgressBar.visibility = View.VISIBLE
             gameScoresCard.visibility = View.GONE
             aiAndStreakCard.visibility = View.GONE
+            scoreChartCard.visibility = View.GONE
 
             try {
                 val token = Firebase.auth.currentUser?.getIdToken(true)?.await()?.token
@@ -147,10 +145,10 @@ class MainActivity : AppCompatActivity() {
                 statsProgressBar.visibility = View.GONE
                 gameScoresCard.visibility = View.VISIBLE
                 aiAndStreakCard.visibility = View.VISIBLE
+                scoreChartCard.visibility = View.VISIBLE
             }
         }
     }
-
 
     private fun updateStatsUI(stats: UserStatsResponse) {
         // Günlük Serisi metni
@@ -192,73 +190,90 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val entries = stats.lastFiveScores.mapIndexed { index, score ->
-            Entry((index + 1).toFloat(), score.toFloat())
-        }
-
-        if (entries.isEmpty()) {
-            val fakeEntries = listOf(Entry(0f, 0f)) // Sabit boş bir nokta
-
-            val dataSet = LineDataSet(fakeEntries, "").apply {
-                color = Color.TRANSPARENT // çizgi görünmesin
-                setDrawCircles(false)
-                setDrawValues(false)
-                setDrawFilled(false)
-            }
-
-            val lineData = LineData(dataSet)
-            lineChart.data = lineData
-
-            // Ekseni göster ama veri çizme
-            lineChart.axisLeft.isEnabled = true
-            lineChart.axisRight.isEnabled = false
-            lineChart.xAxis.isEnabled = true
-            lineChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
-            lineChart.xAxis.setDrawGridLines(false)
-            lineChart.axisLeft.setDrawGridLines(false)
-
-            // Buraya bunu EKLE:
+        // Skor Grafiği
+        if (stats.lastTenGameStats.isNotEmpty()) {
+            setupScoreChart(stats.lastTenGameStats)
+        } else {
+            // No data, show empty message on chart
             lineChart.clear()
             lineChart.setNoDataText("Henüz skor verisi yok. İlk oyunla burası dolacak!")
             lineChart.setNoDataTextColor(Color.parseColor("#6366F1"))
-            lineChart.setNoDataTextTypeface(null) // Opsiyonel, varsayılan font
+            lineChart.setNoDataTextTypeface(null)
             lineChart.getPaint(Chart.PAINT_INFO).textSize = 14f * resources.displayMetrics.density
-
             lineChart.invalidate()
         }
-
-
-    }private fun drawTestChart() {
-        val testEntries = listOf(
-            Entry(1f, 10f),
-            Entry(2f, 15f),
-            Entry(3f, 8f),
-            Entry(4f, 20f),
-            Entry(5f, 17f)
-        )
-
-        val dataSet = LineDataSet(testEntries, "Test Skorları").apply {
-            color = Color.BLUE
-            valueTextSize = 10f
-            setDrawFilled(true)
-            fillAlpha = 100
-            lineWidth = 2f
-            setCircleColor(Color.DKGRAY)
-        }
-
-        val lineData = LineData(dataSet)
-        lineChart.data = lineData
-        lineChart.description.text = "Test Grafiği"
-        lineChart.axisRight.isEnabled = false
-        lineChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
-        lineChart.xAxis.setDrawGridLines(false)
-        lineChart.axisLeft.setDrawGridLines(false)
-        lineChart.invalidate()
-
-
-
     }
 
+    private fun setupScoreChart(gameStats: List<GameScoreData>) {
+        // Data for Score line
+        val scoreEntries = gameStats.mapIndexed { index, gameData ->
+            Entry(index.toFloat(), gameData.score.toFloat())
+        }
 
+        // Data for Level line
+        val levelEntries = gameStats.mapIndexed { index, gameData ->
+            Entry(index.toFloat(), gameData.level.toFloat())
+        }
+
+        // --- Dataset for Scores ---
+        val scoreDataSet = LineDataSet(scoreEntries, "Skor").apply {
+            color = ContextCompat.getColor(this@MainActivity, R.color.blue)
+            valueTextColor = ContextCompat.getColor(this@MainActivity, R.color.black)
+            setCircleColor(color)
+            circleHoleColor = color
+            circleRadius = 4f
+            lineWidth = 2.5f
+            setDrawValues(false) // Don't draw numbers on data points for a cleaner look
+            mode = LineDataSet.Mode.CUBIC_BEZIER // Smoother lines
+        }
+
+        // --- Dataset for Levels ---
+        val levelDataSet = LineDataSet(levelEntries, "Seviye").apply {
+            color = ContextCompat.getColor(this@MainActivity, R.color.green)
+            valueTextColor = ContextCompat.getColor(this@MainActivity, R.color.black)
+            setCircleColor(color)
+            circleHoleColor = color
+            circleRadius = 4f
+            lineWidth = 2.5f
+            setDrawValues(false)
+            mode = LineDataSet.Mode.CUBIC_BEZIER
+        }
+
+        val dataSets = mutableListOf<ILineDataSet>(scoreDataSet, levelDataSet)
+        val lineData = LineData(dataSets)
+        lineChart.data = lineData
+
+        // --- Chart Customization ---
+        lineChart.description.isEnabled = false
+        lineChart.legend.isEnabled = true
+        lineChart.legend.textColor = Color.DKGRAY
+
+        // X-Axis
+        val xAxis = lineChart.xAxis
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.setDrawGridLines(false)
+        xAxis.granularity = 1f
+        xAxis.textColor = Color.DKGRAY
+        xAxis.axisLineColor = Color.DKGRAY
+        // Custom formatter to show "Oyun 1", "Oyun 2", ...
+        xAxis.valueFormatter = object : ValueFormatter() {
+            override fun getAxisLabel(value: Float, axis: AxisBase?): String {
+                // The X-axis shows the index of the game in the list
+                return "Oyun ${value.toInt() + 1}"
+            }
+        }
+
+        // Y-Axis (Left)
+        val leftAxis = lineChart.axisLeft
+        leftAxis.setDrawGridLines(true)
+        leftAxis.gridColor = Color.LTGRAY
+        leftAxis.axisMinimum = 0f // Start Y-axis from 0
+        leftAxis.textColor = Color.DKGRAY
+
+        // Y-Axis (Right)
+        lineChart.axisRight.isEnabled = false
+
+        // Refresh the chart with an animation
+        lineChart.animateX(800)
+    }
 }
-

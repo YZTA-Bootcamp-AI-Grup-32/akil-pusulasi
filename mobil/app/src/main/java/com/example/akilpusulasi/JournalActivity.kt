@@ -21,7 +21,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class JournalActivity : AppCompatActivity() {
-
     private lateinit var journalEditText: EditText
     private lateinit var saveJournalButton: Button
     private lateinit var currentDateTextView: TextView
@@ -72,16 +71,16 @@ class JournalActivity : AppCompatActivity() {
         // Save Button Logic
         saveJournalButton.setOnClickListener {
             val journalText = journalEditText.text.toString().trim()
-            val mood = selectedMood ?: "😐" // Default mood if none selected
+            val mood = selectedMood ?: "😐"
             val fullEntryText = "$mood $journalText"
 
             if (journalText.isBlank()) {
                 Toast.makeText(this, "Lütfen günlüğüne bir şeyler yaz 💌", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
             createJournalEntry(fullEntryText)
         }
+
     }
 
     private fun fetchJournals() {
@@ -114,7 +113,9 @@ class JournalActivity : AppCompatActivity() {
     }
 
     private fun createJournalEntry(content: String) {
+        // Bu fonksiyon artık iki aşamalı çalışacak
         lifecycleScope.launch {
+            // Aşama 1: Anında Kayıt
             saveJournalButton.isEnabled = false
             saveJournalButton.text = "Kaydediliyor..."
             progressBar.visibility = View.VISIBLE
@@ -123,18 +124,28 @@ class JournalActivity : AppCompatActivity() {
                 val token = auth.currentUser?.getIdToken(true)?.await()?.token
                 if (token == null) {
                     Toast.makeText(this@JournalActivity, "Oturum açılamadı.", Toast.LENGTH_LONG).show()
+                    resetSaveButton()
                     return@launch
                 }
 
                 val request = DailyJournalCreateRequest(journalContent = content)
+                // 1. ANLIK KAYIT İSTEĞİ
                 val response = ApiClient.instance.createJournal("Bearer $token", request)
 
-                if (response.isSuccessful) {
+                if (response.isSuccessful && response.body() != null) {
+                    val newJournal = response.body()!!
                     Toast.makeText(this@JournalActivity, "Günlük kaydedildi! 🎉", Toast.LENGTH_SHORT).show()
+
+                    // UI'ı anında güncelle
                     journalEditText.text.clear()
                     resetMoodSelection()
-                    // Re-fetch all journals to show the new one with the AI response
-                    fetchJournals()
+                    addJournalToTop(newJournal) // Yeni günlüğü listeye ekle
+
+                    // 2. ARKA PLAN AI İSTEĞİ
+                    launch {
+                        generateAiResponseInBackground(token, newJournal.id)
+                    }
+
                 } else {
                     Log.e("JournalActivity", "Error creating journal: ${response.code()}")
                     Toast.makeText(this@JournalActivity, "Günlük kaydedilemedi.", Toast.LENGTH_SHORT).show()
@@ -144,34 +155,76 @@ class JournalActivity : AppCompatActivity() {
                 Log.e("JournalActivity", "Exception creating journal", e)
                 Toast.makeText(this@JournalActivity, "Bir hata oluştu: ${e.message}", Toast.LENGTH_LONG).show()
             } finally {
-                saveJournalButton.isEnabled = true
-                saveJournalButton.text = "GÜNLÜĞÜ KAYDET"
-                progressBar.visibility = View.GONE
+                // Kaydet butonu hemen serbest bırakılır
+                resetSaveButton()
             }
+        }
+    }
+
+    private suspend fun generateAiResponseInBackground(token: String, journalId: String) {
+        try {
+            Log.d("JournalActivity", "Arka planda AI yanıtı isteniyor: $journalId")
+            val response = ApiClient.instance.generateAiResponseForJournal("Bearer $token", journalId)
+
+            if (response.isSuccessful && response.body() != null) {
+                val updatedJournal = response.body()!!
+                Log.d("JournalActivity", "AI yanıtı alındı: ${updatedJournal.aiResponse}")
+                // UI'ı güncellenmiş veriyle yenile
+                updateJournalInList(updatedJournal)
+            } else {
+                Log.e("JournalActivity", "AI yanıtı alınamadı: ${response.code()}")
+            }
+        } catch (e: Exception) {
+            Log.e("JournalActivity", "AI yanıtı alınırken hata oluştu", e)
+        }
+    }
+
+    private fun addJournalToTop(newJournal: DailyJournalResponse) {
+        val entry = mapResponseToEntry(newJournal)
+        journalEntries.add(0, entry)
+        journalAdapter.notifyItemInserted(0)
+        recyclerView.scrollToPosition(0)
+    }
+
+    private fun updateJournalInList(updatedJournal: DailyJournalResponse) {
+        val index = journalEntries.indexOfFirst { it.id == updatedJournal.id }
+        if (index != -1) {
+            journalEntries[index] = mapResponseToEntry(updatedJournal)
+            journalAdapter.notifyItemChanged(index)
         }
     }
 
     private fun updateJournalList(backendJournals: List<DailyJournalResponse>) {
         journalEntries.clear()
         val mappedEntries = backendJournals.map { backendEntry ->
-            // Format the date string for display
-            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX", Locale.getDefault())
-            val outputFormat = SimpleDateFormat("d MMMM yyyy, HH:mm", Locale("tr"))
-            val date = try {
-                inputFormat.parse(backendEntry.createdAt)?.let { outputFormat.format(it) } ?: backendEntry.createdAt
-            } catch (e: Exception) {
-                backendEntry.createdAt // Fallback to raw string if parsing fails
-            }
-
-            JournalEntry(
-                id = backendEntry.id,
-                content = backendEntry.journalContent,
-                date = date,
-                aiResponse = backendEntry.aiResponse
-            )
+            mapResponseToEntry(backendEntry)
         }
         journalEntries.addAll(mappedEntries)
         journalAdapter.notifyDataSetChanged()
+    }
+
+    private fun mapResponseToEntry(backendEntry: DailyJournalResponse): JournalEntry {
+        // Tarih formatlama
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("d MMMM yyyy, HH:mm", Locale("tr"))
+        val date = try {
+            inputFormat.parse(backendEntry.createdAt)?.let { outputFormat.format(it) } ?: backendEntry.createdAt
+        } catch (e: Exception) {
+            backendEntry.createdAt
+        }
+
+        return JournalEntry(
+            id = backendEntry.id,
+            content = backendEntry.journalContent,
+            date = date,
+            aiResponse = backendEntry.aiResponse
+        )
+    }
+
+    private fun resetSaveButton() {
+        saveJournalButton.isEnabled = true
+        saveJournalButton.text = "GÜNLÜĞÜ KAYDET"
+        progressBar.visibility = View.GONE
     }
 
     private fun setupRecyclerView() {

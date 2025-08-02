@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.connection import get_db
 from schemas.user import UserCreate, UserResponse
-from schemas.stats import UserStatsResponse
+from schemas.stats import UserStatsResponse, GameScoreData
 from database.crud import user_crud, daily_journal_crud, game_session_crud 
 from utils.dependencies import get_current_user
 from datetime import datetime, timedelta, timezone
@@ -73,7 +73,7 @@ async def get_current_user_profile(
     "/me/stats",
     response_model=UserStatsResponse,
     summary="Get user's statistics",
-    description="Retrieves the journal streak and last five game scores for the authenticated user."
+    description="Retrieves journal streak, last five scores, and last ten game stats for the graph."
 )
 async def get_user_stats(
     db: AsyncSession = Depends(get_db),
@@ -87,10 +87,10 @@ async def get_user_stats(
     if journals:
         # Get unique dates of journal entries
         journal_dates = sorted(list(set([j.created_at.date() for j in journals])), reverse=True)
-        
+
         today = datetime.now(timezone.utc).date()
         yesterday = today - timedelta(days=1)
-        
+
         # Check if the most recent journal is from today or yesterday
         if journal_dates[0] == today or journal_dates[0] == yesterday:
             journal_streak = 1
@@ -102,12 +102,24 @@ async def get_user_stats(
                 else:
                     break # Streak is broken
 
-    # --- 2. Get Last 5 Game Scores ---
+    # --- 2. Get Game Stats ---
     game_sessions = await game_session_crud.get_game_sessions_by_user_id(db, user_id=user_uid)
-    # Take the first 5 sessions (they are already sorted by date desc) and get their scores
+
+    # Get last 5 scores for the top display
     last_five_scores = [session.score for session in game_sessions[:5]]
+
+    # Get stats for the last 10 games for the graph
+    # Reverse them so the graph shows progression over time (oldest to newest)
+    last_ten_sessions = game_sessions[:10]
+    last_ten_sessions.reverse()
+
+    last_ten_game_stats = [
+        GameScoreData(score=session.score, level=session.difficulty_level)
+        for session in last_ten_sessions
+    ]
 
     return UserStatsResponse(
         journal_streak=journal_streak,
-        last_five_scores=last_five_scores
+        last_five_scores=last_five_scores,
+        last_ten_game_stats=last_ten_game_stats
     )

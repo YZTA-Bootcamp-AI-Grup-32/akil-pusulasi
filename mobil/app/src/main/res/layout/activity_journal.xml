@@ -5,113 +5,109 @@
     android:background="@drawable/journal_background"
     android:padding="16dp">
 
-    <!-- Scroll edilebilir içerik -->
-    <ScrollView
-        android:id="@+id/contentScroll"
+    <LinearLayout
+        android:id="@+id/topContentLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/bottomNavigation"
-        android:fillViewport="true">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentTop="true">
 
+        <!-- 📅 Bugünün tarihi -->
+        <TextView
+            android:id="@+id/currentDateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📅 31 Temmuz 2025"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#333"
+            android:layout_marginBottom="8dp" />
+
+        <!-- 📝 Günlük EditText -->
+        <EditText
+            android:id="@+id/journalEditText"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"  
+            android:hint="Bugün ne hissettin?"
+            android:gravity="top"
+            android:background="@drawable/rounded_edittext"
+            android:padding="16dp"
+            android:textSize="16sp"
+            android:inputType="textMultiLine|textCapSentences" />
+
+        <!-- 😊 Duygu başlığı -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nasıl hissediyorsun?"
+            android:textSize="16sp"
+            android:textColor="#333"
+            android:layout_marginTop="16dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="8dp" />
+
+        <!-- 😄😢😠😴 Mood seçenekleri -->
         <LinearLayout
+            android:id="@+id/moodLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
 
-            <!-- 📅 Bugünün tarihi -->
-            <TextView
-                android:id="@+id/currentDateText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="📅 31 Temmuz 2025"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#333"
-                android:layout_marginBottom="8dp" />
-
-            <!-- 📝 Günlük EditText -->
-            <EditText
-                android:id="@+id/journalEditText"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:hint="Bugün ne hissettin?"
-                android:gravity="top"
-                android:background="@drawable/rounded_edittext"
-                android:padding="16dp"
-                android:textSize="16sp"
-                android:inputType="textMultiLine" />
-
-            <!-- 😊 Duygu başlığı -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Nasıl hissediyorsun?"
-                android:textSize="16sp"
-                android:textColor="#333"
-                android:layout_marginTop="16dp"
-                android:layout_gravity="center"
-                android:layout_marginBottom="8dp" />
-
-            <!-- 😄😢😠😴 Mood seçenekleri -->
-            <LinearLayout
-                android:id="@+id/moodLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:layout_marginBottom="16dp">
-
-                <TextView android:id="@+id/moodHappy" android:text="😄" style="@style/MoodEmojiStyle" />
-                <TextView android:id="@+id/moodSad" android:text="😢" style="@style/MoodEmojiStyle" />
-                <TextView android:id="@+id/moodAngry" android:text="😠" style="@style/MoodEmojiStyle" />
-                <TextView android:id="@+id/moodTired" android:text="😴" style="@style/MoodEmojiStyle" />
-            </LinearLayout>
-
-            <!-- 💾 Kaydet Butonu -->
-            <Button
-                android:id="@+id/saveJournalButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="GÜNLÜĞÜ KAYDET"
-                android:textColor="#fff"
-                android:backgroundTint="#8E44AD"
-                android:layout_marginTop="24dp"
-                android:padding="14dp"
-                android:textAllCaps="true"
-                android:elevation="4dp" />
-
-            <!-- 📖 Geçmiş Günlükler Başlık -->
-            <TextView
-                android:text="📖 Geçmiş Günlükler"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginTop="32dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <!-- 📚 Günlük Listeleme RecyclerView -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/journalRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:layout_marginTop="8dp" />
-
+            <TextView android:id="@+id/moodHappy" android:text="😄" style="@style/MoodEmojiStyle" />
+            <TextView android:id="@+id/moodSad" android:text="😢" style="@style/MoodEmojiStyle" />
+            <TextView android:id="@+id/moodAngry" android:text="😠" style="@style/MoodEmojiStyle" />
+            <TextView android:id="@+id/moodTired" android:text="😴" style="@style/MoodEmojiStyle" />
         </LinearLayout>
-    </ScrollView>
 
-   <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:visibility="gone" />
-    
-    <!-- ⛵ Alt Navigasyon -->
+        <!-- 💾 Kaydet Butonu -->
+        <Button
+            android:id="@+id/saveJournalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="GÜNLÜĞÜ KAYDET"
+            android:textColor="#fff"
+            android:backgroundTint="#8E44AD"
+            android:padding="14dp"
+            android:textAllCaps="true"
+            android:elevation="4dp" />
+
+        <!-- 📖 Geçmiş Günlükler Başlık -->
+        <TextView
+            android:text="📖 Geçmiş Günlükler"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginTop="24dp" 
+            android:layout_marginBottom="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/journalRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/topContentLayout"
+        android:layout_above="@id/bottomNavigation"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp"
+        />
+
+    <!-- ALT NAVİGASYON: Sayfanın en altında sabit durur -->
     <include
         android:id="@+id/bottomNavigation"
         layout="@layout/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />
+
+    <!-- ProgressBar: Diğer elemanların üzerinde, ortada durur -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
+
 </RelativeLayout>
