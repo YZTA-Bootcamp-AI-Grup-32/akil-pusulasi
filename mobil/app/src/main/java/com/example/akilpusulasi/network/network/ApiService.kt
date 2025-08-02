@@ -12,6 +12,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiService {
@@ -44,13 +45,20 @@ interface ApiService {
         @Header("Authorization") token: String
     ): Response<UserStatsResponse>
 
-    @POST("/api/v1/journals")
+    @POST("/api/v1/journals/save")
     suspend fun createJournal(
         @Header("Authorization") token: String,
         @Body request: DailyJournalCreateRequest
     ): Response<DailyJournalResponse>
 
-    @GET("/api/v1/journals")
+    // YENİ ENDPOINT TANIMI
+    @POST("/api/v1/journals/{journal_id}/generate-ai-response")
+    suspend fun generateAiResponseForJournal(
+        @Header("Authorization") token: String,
+        @Path("journal_id") journalId: String
+    ): Response<DailyJournalResponse>
+
+    @GET("/api/v1/journals/")
     suspend fun getMyJournals(
         @Header("Authorization") token: String
     ): Response<List<DailyJournalResponse>>
