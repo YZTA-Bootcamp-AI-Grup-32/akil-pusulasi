@@ -45,6 +45,8 @@ dependencies {
     // Animasyon (Lottie)
     implementation("com.airbnb.android:lottie:6.4.0")
 
+
+
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
     implementation("com.google.firebase:firebase-analytics")
@@ -74,4 +76,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    //---skor card
+
+    implementation("com.github.PhilJay:MPAndroidChart:3.1.0")
+
 }

@@ -1,275 +1,315 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="#F8F9FA"
-
-    >
-
-    <!-- Başlık -->
-
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Akıl Pusulası"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:textColor="#1E40AF"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="40dp"
-        android:fontFamily="@font/orbitron_bold"/>
-
-    <!-- İçerik Alanı -->
-    <LinearLayout
-        android:id="@+id/contentArea"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/tvTitle"
-        android:layout_above="@id/bottomNavContainer"
-        android:orientation="vertical"
-        android:layout_marginBottom="24dp">
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:background="#F8F9FA"
 
-        <!-- İstatistik Container -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/gameScoresCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="8dp"
-            app:cardBackgroundColor="#FFFFFF"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp">
+        >
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="20dp">
+        <!-- Başlık -->
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🎮 Son 5 Oyun Skoru"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#1E40AF"
-                    android:fontFamily="@font/orbitron_bold"
-                    android:layout_marginBottom="16dp"/>
-
-                <HorizontalScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:scrollbars="none">
-
-                    <LinearLayout
-                        android:id="@+id/scoresLayout"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal" />
-                </HorizontalScrollView>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-
-        <!-- AI Yorum Container -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/aiAndStreakCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="8dp"
-            app:cardBackgroundColor="#FFFFFF"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🤖 Akıl Pusulası'nın Yorumu"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#1E40AF"
-                    android:fontFamily="@font/orbitron_bold"
-                    android:layout_marginBottom="16dp"/>
-
-                <!-- Journal Streak -->
-                <TextView
-                    android:id="@+id/tvJournalStreak"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Günlük Serisi: Yükleniyor..."
-                    android:textSize="16sp"
-                    android:textColor="#333333"
-                    android:drawablePadding="8dp"
-                    app:drawableStartCompat="@drawable/ic_journal"
-                    app:drawableTint="#8E44AD" />
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- ... title ve contentArea burada ... -->
-
-
-        <ProgressBar
-            android:id="@+id/statsProgressBar"
+        <TextView
+            android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="24dp"
-            android:visibility="gone" />
-            
-    </LinearLayout>
+            android:text="Akıl Pusulası"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:textColor="#1E40AF"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="40dp"
+            android:fontFamily="@font/orbitron_bold"/>
 
-    <!-- Alt Navigasyon Container -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/bottomNavContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="20dp"
-        app:cardBackgroundColor="#FFFFFF"
-        app:cardCornerRadius="28dp"
-        app:cardElevation="12dp">
-
+        <!-- İçerik Alanı -->
         <LinearLayout
+            android:id="@+id/contentArea"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="16dp">
+            android:layout_below="@id/tvTitle"
+            android:layout_above="@id/bottomNavContainer"
+            android:orientation="vertical"
+            android:layout_marginBottom="24dp">
 
-            <!-- Günlük Butonu -->
-            <LinearLayout
-                android:id="@+id/btnJournal"
-                android:layout_width="0dp"
-                android:layout_height="64dp"
-                android:layout_marginEnd="12dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_selector"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:orientation="vertical">
+            <!-- İstatistik Container -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/gameScoresCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="#FFFFFF"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginBottom="2dp"
-                    android:src="@drawable/ic_journal" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="20dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="GÜNLÜK"
-                    android:textColor="#333333"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:fontFamily="@font/orbitron_bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🎮 Son 5 Oyun Skoru"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#1E40AF"
+                        android:fontFamily="@font/orbitron_bold"
+                        android:layout_marginBottom="16dp"/>
 
-            </LinearLayout>
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:scrollbars="none">
 
-            <!-- Ana Sayfa Butonu (Ortada ve Büyük) -->
-            <LinearLayout
-                android:id="@+id/btnHome"
-                android:layout_width="0dp"
-                android:layout_height="80dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_weight="1.3"
-                android:background="@drawable/button_glow"
-                android:clickable="true"
-                android:elevation="6dp"
-                android:focusable="true"
-                android:gravity="center"
-                android:orientation="vertical">
+                        <LinearLayout
+                            android:id="@+id/scoresLayout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal" />
+                    </HorizontalScrollView>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
-                <ImageView
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:layout_marginBottom="4dp"
-                    android:src="@drawable/ic_home" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="ANA SAYFA"
-                    android:textColor="#333333"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:fontFamily="@font/orbitron_bold" />
+            <!-- AI Yorum Container -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/aiAndStreakCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="#FFFFFF"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp">
 
-            </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="20dp">
 
-            <!-- Oyun Butonu -->
-            <LinearLayout
-                android:id="@+id/btnGame"
-                android:layout_width="0dp"
-                android:layout_height="64dp"
-                android:layout_marginStart="12dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_selector"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🤖 Akıl Pusulası'nın Yorumu"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#1E40AF"
+                        android:fontFamily="@font/orbitron_bold"
+                        android:layout_marginBottom="16dp"/>
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginBottom="2dp"
-                    android:src="@drawable/ic_game" />
+                    <!-- Journal Streak -->
+                    <TextView
+                        android:id="@+id/tvJournalStreak"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Günlük Serisi: Yükleniyor..."
+                        android:textSize="16sp"
+                        android:textColor="#333333"
+                        android:drawablePadding="8dp"
+                        app:drawableStartCompat="@drawable/ic_journal"
+                        app:drawableTint="#8E44AD" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="OYUN"
-                    android:textColor="#333333"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:fontFamily="@font/orbitron_bold" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
-            </LinearLayout>
+            <!-- Skor Grafiği Kartı -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/scoreChartCard"
+                android:layout_width="match_parent"
+                android:layout_height="240dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="20dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="#FFFFFF">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Oyun Skoru Grafiği"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#333333"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="12dp"
+                        android:fontFamily="@font/orbitron_bold"/>
+
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/scoreLineChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="160dp"
+                        android:background="#FAFAFA"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ... title ve contentArea burada ... -->
+
+
+            <ProgressBar
+                android:id="@+id/statsProgressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="24dp"
+                android:visibility="gone" />
 
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnLogout"
-        style="@style/Widget.MaterialComponents.Button"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="14dp"
-        android:layout_marginEnd="5dp"
+        <!-- Alt Navigasyon Container -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/bottomNavContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="20dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="28dp"
+            app:cardElevation="12dp">
 
-        android:backgroundTint="@color/logout_red_selector"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <!-- Günlük Butonu -->
+                <LinearLayout
+                    android:id="@+id/btnJournal"
+                    android:layout_width="0dp"
+                    android:layout_height="64dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/button_selector"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginBottom="2dp"
+                        android:src="@drawable/ic_journal" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GÜNLÜK"
+                        android:textColor="#333333"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/orbitron_bold" />
+
+                </LinearLayout>
+
+                <!-- Ana Sayfa Butonu (Ortada ve Büyük) -->
+                <LinearLayout
+                    android:id="@+id/btnHome"
+                    android:layout_width="0dp"
+                    android:layout_height="80dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1.3"
+                    android:background="@drawable/button_glow"
+                    android:clickable="true"
+                    android:elevation="6dp"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_marginBottom="4dp"
+                        android:src="@drawable/ic_home" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ANA SAYFA"
+                        android:textColor="#333333"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:fontFamily="@font/orbitron_bold" />
+
+                </LinearLayout>
+
+                <!-- Oyun Butonu -->
+                <LinearLayout
+                    android:id="@+id/btnGame"
+                    android:layout_width="0dp"
+                    android:layout_height="64dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/button_selector"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginBottom="2dp"
+                        android:src="@drawable/ic_game" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="OYUN"
+                        android:textColor="#333333"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:fontFamily="@font/orbitron_bold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogout"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="14dp"
+            android:layout_marginEnd="5dp"
+            android:contentDescription="Çıkış Yap"
 
 
-        android:textAllCaps="false"
-        android:textColor="@android:color/white"
+            android:backgroundTint="@color/logout_red_selector"
 
-        app:cornerRadius="12dp"
-        app:elevation="6dp"
-        app:icon="@drawable/ic_logout"
 
-        app:iconGravity="textEnd"
-        app:iconPadding="6dp"
-        app:iconSize="30dp"
-        app:iconTint="@android:color/white"
-        app:rippleColor="#26B8DC" />
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
 
-</RelativeLayout>
+            app:cornerRadius="12dp"
+            app:elevation="6dp"
+            app:icon="@drawable/ic_logout"
+
+            app:iconGravity="textEnd"
+            app:iconPadding="6dp"
+            app:iconSize="30dp"
+            app:iconTint="@android:color/white"
+            app:rippleColor="#26B8DC" />
+
+    </RelativeLayout>

@@ -21,6 +21,18 @@ import com.google.firebase.auth.ktx.auth // Import auth
 import com.google.firebase.ktx.Firebase // Import Firebase
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.components.XAxis
+import android.graphics.Color
+import com.github.mikephil.charting.utils.Utils
+import android.graphics.Paint
+import com.github.mikephil.charting.charts.Chart
+
+
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var btnHome: LinearLayout
@@ -32,9 +44,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var statsProgressBar: ProgressBar
     private lateinit var tvJournalStreak: TextView
     private lateinit var scoresLayout: LinearLayout
+
     // --- New visibility controls ---
     private lateinit var gameScoresCard: CardView
     private lateinit var aiAndStreakCard: CardView
+    private lateinit var lineChart: LineChart
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +67,10 @@ class MainActivity : AppCompatActivity() {
         scoresLayout = findViewById(R.id.scoresLayout)
         gameScoresCard = findViewById(R.id.gameScoresCard)
         aiAndStreakCard = findViewById(R.id.aiAndStreakCard)
+        lineChart = findViewById(R.id.scoreLineChart)
+        lineChart = findViewById(R.id.scoreLineChart)
 
+        drawTestChart()
         setSelectedButton(btnHome)
 
         btnLogout.setOnClickListener {
@@ -96,7 +114,8 @@ class MainActivity : AppCompatActivity() {
             try {
                 val token = Firebase.auth.currentUser?.getIdToken(true)?.await()?.token
                 if (token == null) {
-                    Toast.makeText(this@MainActivity, "Oturum bulunamadı.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "Oturum bulunamadı.", Toast.LENGTH_SHORT)
+                        .show()
                     return@launch
                 }
 
@@ -105,13 +124,24 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful && response.body() != null) {
                     updateStatsUI(response.body()!!)
                 } else {
-                    Log.e("MainActivity", "Error fetching stats: ${response.code()} - ${response.message()}")
-                    Toast.makeText(this@MainActivity, "İstatistikler alınamadı.", Toast.LENGTH_SHORT).show()
+                    Log.e(
+                        "MainActivity",
+                        "Error fetching stats: ${response.code()} - ${response.message()}"
+                    )
+                    Toast.makeText(
+                        this@MainActivity,
+                        "İstatistikler alınamadı.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
 
             } catch (e: Exception) {
                 Log.e("MainActivity", "Exception fetching stats", e)
-                Toast.makeText(this@MainActivity, "Bir hata oluştu: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this@MainActivity,
+                    "Bir hata oluştu: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             } finally {
                 // Hide progress bar and show the cards
                 statsProgressBar.visibility = View.GONE
@@ -121,8 +151,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
     private fun updateStatsUI(stats: UserStatsResponse) {
-        // Update Journal Streak (in the bottom card)
+        // Günlük Serisi metni
         val streakText = if (stats.journalStreak > 0) {
             "🔥 ${stats.journalStreak} günlük seri!"
         } else {
@@ -130,8 +161,8 @@ class MainActivity : AppCompatActivity() {
         }
         tvJournalStreak.text = streakText
 
-        // Update Last 5 Scores (in the top card)
-        scoresLayout.removeAllViews() // Clear previous scores if any
+        // Skorlar kutusu
+        scoresLayout.removeAllViews()
 
         if (stats.lastFiveScores.isEmpty()) {
             val noDataTextView = TextView(this).apply {
@@ -147,15 +178,87 @@ class MainActivity : AppCompatActivity() {
                     textSize = 18f
                     setTypeface(null, android.graphics.Typeface.BOLD)
                     setTextColor(ContextCompat.getColor(this@MainActivity, R.color.white))
-                    background = ContextCompat.getDrawable(this@MainActivity, R.drawable.circle_blue_gradient)
+                    background = ContextCompat.getDrawable(
+                        this@MainActivity,
+                        R.drawable.circle_blue_gradient
+                    )
                     gravity = Gravity.CENTER
-                    val size = (48 * resources.displayMetrics.density).toInt() // 48dp
+                    val size = (48 * resources.displayMetrics.density).toInt()
                     layoutParams = LinearLayout.LayoutParams(size, size).apply {
-                        setMargins(0, 0, (8 * resources.displayMetrics.density).toInt(), 0) // 8dp margin right
+                        setMargins(0, 0, (8 * resources.displayMetrics.density).toInt(), 0)
                     }
                 }
                 scoresLayout.addView(scoreTextView)
             }
         }
+
+        val entries = stats.lastFiveScores.mapIndexed { index, score ->
+            Entry((index + 1).toFloat(), score.toFloat())
+        }
+
+        if (entries.isEmpty()) {
+            val fakeEntries = listOf(Entry(0f, 0f)) // Sabit boş bir nokta
+
+            val dataSet = LineDataSet(fakeEntries, "").apply {
+                color = Color.TRANSPARENT // çizgi görünmesin
+                setDrawCircles(false)
+                setDrawValues(false)
+                setDrawFilled(false)
+            }
+
+            val lineData = LineData(dataSet)
+            lineChart.data = lineData
+
+            // Ekseni göster ama veri çizme
+            lineChart.axisLeft.isEnabled = true
+            lineChart.axisRight.isEnabled = false
+            lineChart.xAxis.isEnabled = true
+            lineChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
+            lineChart.xAxis.setDrawGridLines(false)
+            lineChart.axisLeft.setDrawGridLines(false)
+
+            // Buraya bunu EKLE:
+            lineChart.clear()
+            lineChart.setNoDataText("Henüz skor verisi yok. İlk oyunla burası dolacak!")
+            lineChart.setNoDataTextColor(Color.parseColor("#6366F1"))
+            lineChart.setNoDataTextTypeface(null) // Opsiyonel, varsayılan font
+            lineChart.getPaint(Chart.PAINT_INFO).textSize = 14f * resources.displayMetrics.density
+
+            lineChart.invalidate()
+        }
+
+
+    }private fun drawTestChart() {
+        val testEntries = listOf(
+            Entry(1f, 10f),
+            Entry(2f, 15f),
+            Entry(3f, 8f),
+            Entry(4f, 20f),
+            Entry(5f, 17f)
+        )
+
+        val dataSet = LineDataSet(testEntries, "Test Skorları").apply {
+            color = Color.BLUE
+            valueTextSize = 10f
+            setDrawFilled(true)
+            fillAlpha = 100
+            lineWidth = 2f
+            setCircleColor(Color.DKGRAY)
+        }
+
+        val lineData = LineData(dataSet)
+        lineChart.data = lineData
+        lineChart.description.text = "Test Grafiği"
+        lineChart.axisRight.isEnabled = false
+        lineChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
+        lineChart.xAxis.setDrawGridLines(false)
+        lineChart.axisLeft.setDrawGridLines(false)
+        lineChart.invalidate()
+
+
+
     }
+
+
 }
+
