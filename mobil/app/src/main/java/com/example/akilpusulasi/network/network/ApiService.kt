@@ -4,9 +4,9 @@ import com.example.akilpusulasi.network.request.CreateUserRequest
 import com.example.akilpusulasi.network.request.GameSessionCreateRequest
 import com.example.akilpusulasi.network.response.GameParametersResponse
 import com.example.akilpusulasi.network.response.UserResponse
-// Add these new imports
 import com.example.akilpusulasi.network.request.DailyJournalCreateRequest
 import com.example.akilpusulasi.network.response.DailyJournalResponse
+import com.example.akilpusulasi.network.response.UserStatsResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -36,6 +36,11 @@ interface ApiService {
     suspend fun getMyProfile(
         @Header("Authorization") token: String
     ): Response<UserResponse>
+
+    @GET("/api/v1/users/me/stats")
+    suspend fun getUserStats(
+        @Header("Authorization") token: String
+    ): Response<UserStatsResponse>
 
     @POST("/api/v1/journals")
     suspend fun createJournal(

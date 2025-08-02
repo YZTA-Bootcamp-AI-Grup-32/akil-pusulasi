@@ -2,8 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.connection import get_db
 from schemas.user import UserCreate, UserResponse
-from database.crud import user_crud
+from schemas.stats import UserStatsResponse
+from database.crud import user_crud, daily_journal_crud, game_session_crud 
 from utils.dependencies import get_current_user
+from datetime import datetime, timedelta, timezone
 
 router = APIRouter(tags=["Users"])
 
@@ -65,3 +67,47 @@ async def get_current_user_profile(
         )
 
     return user_profile
+
+
+@router.get(
+    "/me/stats",
+    response_model=UserStatsResponse,
+    summary="Get user's statistics",
+    description="Retrieves the journal streak and last five game scores for the authenticated user."
+)
+async def get_user_stats(
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    user_uid = current_user.get("uid")
+
+    # --- 1. Calculate Journal Streak ---
+    journals = await daily_journal_crud.get_journals_by_user_id(db, user_id=user_uid)
+    journal_streak = 0
+    if journals:
+        # Get unique dates of journal entries
+        journal_dates = sorted(list(set([j.created_at.date() for j in journals])), reverse=True)
+        
+        today = datetime.now(timezone.utc).date()
+        yesterday = today - timedelta(days=1)
+        
+        # Check if the most recent journal is from today or yesterday
+        if journal_dates[0] == today or journal_dates[0] == yesterday:
+            journal_streak = 1
+            current_day = journal_dates[0]
+            for i in range(1, len(journal_dates)):
+                if journal_dates[i] == current_day - timedelta(days=1):
+                    journal_streak += 1
+                    current_day = journal_dates[i]
+                else:
+                    break # Streak is broken
+
+    # --- 2. Get Last 5 Game Scores ---
+    game_sessions = await game_session_crud.get_game_sessions_by_user_id(db, user_id=user_uid)
+    # Take the first 5 sessions (they are already sorted by date desc) and get their scores
+    last_five_scores = [session.score for session in game_sessions[:5]]
+
+    return UserStatsResponse(
+        journal_streak=journal_streak,
+        last_five_scores=last_five_scores
+    )
