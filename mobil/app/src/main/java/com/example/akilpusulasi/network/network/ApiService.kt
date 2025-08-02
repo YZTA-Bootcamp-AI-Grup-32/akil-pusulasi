@@ -12,6 +12,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface ApiService {
 
@@ -29,7 +30,8 @@ interface ApiService {
 
     @GET("/api/v1/new-session-parameters")
     suspend fun getNewGameParameters(
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
+        @Query("from_level") fromLevel: Int? // <-- ADD THIS PARAMETER
     ): Response<GameParametersResponse>
 
     @GET("/api/v1/users/me")

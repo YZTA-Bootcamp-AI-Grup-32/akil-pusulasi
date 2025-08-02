@@ -78,6 +78,7 @@ captures/
 .navigation/
 *.orig
 .gradle
+.kotlin/
 
 # Log files
 *.log

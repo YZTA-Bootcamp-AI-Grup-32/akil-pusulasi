@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.connection import get_db
 from schemas.game_session import GameSessionCreate, GameSessionResponse, GameSessionUpdate
-from schemas.game_session import GameParametersResponse 
-from utils.difficulty_adjuster import calculate_next_difficulty_level, DIFFICULTY_LEVELS
+from schemas.game_session import GameParametersResponse
+from utils.difficulty_adjuster import calculate_next_difficulty_level, DIFFICULTY_LEVELS, MAX_LEVEL
 from database.crud import game_session_crud
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from fastapi import HTTPException
 from utils.dependencies import get_current_user
@@ -104,26 +104,31 @@ async def update_game_session_by_id_endpoint(
 @router.get("/new-session-parameters", response_model=GameParametersResponse)
 async def get_new_game_parameters(
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    from_level: Optional[int] = Query(None, description="The level the user just completed. If provided, returns parameters for the next level.")
 ):
     """
-    Calculates and returns the optimal parameters for the user's next game session.
-    The mobile app should call this endpoint right before starting a new game.
+    Calculates and returns parameters for a game round.
+    - If 'from_level' is provided, it returns parameters for the next sequential level.
+    - If 'from_level' is not provided, it calculates the best starting level based on user history.
     """
     user_uid = current_user.get("uid")
-    
-    # Get the user's previous game sessions (ordered from newest to oldest)
-    # Your existing CRUD function works perfectly for this.
-    previous_sessions = await game_session_crud.get_game_sessions_by_user_id(db, user_id=user_uid)
-    
-    # Calculate the next difficulty level using our new heuristic logic
-    next_level = calculate_next_difficulty_level(previous_sessions)
-    
-    # Get the game parameters for that level
+    next_level: int
+
+    if from_level is not None:
+        next_level = from_level + 1
+    else:
+        previous_sessions = await game_session_crud.get_game_sessions_by_user_id(db, user_id=user_uid)
+        next_level = calculate_next_difficulty_level(previous_sessions)
+
+    if next_level > MAX_LEVEL:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Congratulations! You have completed all {MAX_LEVEL} levels."
+        )
+
     parameters = DIFFICULTY_LEVELS.get(next_level)
-    
     if not parameters:
-        # Fallback in case of an invalid level number
-        raise HTTPException(status_code=500, detail="Could not determine difficulty parameters.")
-        
+        raise HTTPException(status_code=500, detail="Could not determine difficulty parameters for level {next_level}.")
+
     return GameParametersResponse(difficulty_level=next_level, **parameters)

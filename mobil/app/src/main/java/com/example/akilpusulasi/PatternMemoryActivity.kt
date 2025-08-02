@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 import java.util.Random
 import kotlin.math.sqrt
 
@@ -32,10 +33,11 @@ class PatternMemoryActivity : AppCompatActivity() {
         const val MIN_PAUSE_BETWEEN_CELLS_MS: Long = 250L
     }
 
-    // --- MODIFIED & NEW GAME STATE VARIABLES ---
+    // --- GAME STATE VARIABLES ---
     private var currentLevel = 1
-    private var gridSize = 3 // Will be updated by API
-    private var cellsToIlluminate = 2 // Will be updated by API
+    private var gridSize = 3
+    private var cellsToIlluminate = 2
+    private var patternDisplayTime: Long = 1200L
 
     // UI elements
     private lateinit var gridLayout: GridLayout
@@ -43,17 +45,14 @@ class PatternMemoryActivity : AppCompatActivity() {
     private lateinit var tvLevel: TextView
     private lateinit var btnStartGame: Button
 
-    // Game logic data structures
+    // Game logic
     private var pattern = mutableListOf<Int>()
     private var userSelection = mutableListOf<Int>()
-
-    // Game state flags
     private var isShowingPattern = false
     private var canUserClick = false
-
     private val gridCells = mutableListOf<Button>()
 
-    // Color references
+    // Colors
     private var defaultCellColor: Int = 0
     private var illuminatedCellColor: Int = 0
     private var selectedCellColor: Int = 0
@@ -62,27 +61,21 @@ class PatternMemoryActivity : AppCompatActivity() {
 
     private val handler = Handler(Looper.getMainLooper())
 
-    // --- NEW VARIABLES FOR BACKEND INTEGRATION ---
+    // --- BACKEND INTEGRATION VARIABLES ---
     private lateinit var auth: FirebaseAuth
-    private var currentDifficultyLevel: Int = 1
-    private var sessionStartTime: Long = 0L // To calculate duration
-    private var patternDisplayTime: Long = 1200L // Will be updated by API
-
+    private var sessionStartTime: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pattern_memory)
 
-        // --- NEW ---
         auth = Firebase.auth
 
-        // UI element binding (No changes)
         gridLayout = findViewById(R.id.grid_layout)
         tvInstructions = findViewById(R.id.tv_instructions)
         tvLevel = findViewById(R.id.tv_level)
         btnStartGame = findViewById(R.id.btn_start_game)
 
-        // Color references (No changes)
         defaultCellColor = ContextCompat.getColor(this, R.color.gray)
         illuminatedCellColor = ContextCompat.getColor(this, R.color.blue)
         selectedCellColor = ContextCompat.getColor(this, R.color.selected_purple)
@@ -91,10 +84,10 @@ class PatternMemoryActivity : AppCompatActivity() {
 
         tvLevel.visibility = View.GONE
         btnStartGame.setOnClickListener {
-            // startGame() is now replaced with fetch and start
-            fetchGameParametersAndStart()
+            // This button now only starts the very first round of a session.
+            fetchAndStartRound(isNewGame = true)
         }
-        setupGrid() // Initial setup for display
+        setupGrid()
     }
 
     override fun onDestroy() {
@@ -102,97 +95,93 @@ class PatternMemoryActivity : AppCompatActivity() {
         handler.removeCallbacksAndMessages(null)
     }
 
-    // --- MODIFIED: This is now the main entry point for starting a game ---
-    private fun fetchGameParametersAndStart() {
+    private fun fetchAndStartRound(isNewGame: Boolean) {
         btnStartGame.isEnabled = false
         btnStartGame.text = "Hazırlanıyor..."
+        btnStartGame.visibility = if (isNewGame) View.VISIBLE else View.GONE
 
         lifecycleScope.launch {
             try {
-                val currentUser = auth.currentUser
-                    ?: throw IllegalStateException("User not logged in.")
-                val token = currentUser.getIdToken(true).await().token
-                    ?: throw IllegalStateException("Could not get auth token.")
-
+                val currentUser = auth.currentUser ?: throw IllegalStateException("User not logged in.")
+                val token = currentUser.getIdToken(true).await().token ?: throw IllegalStateException("Could not get auth token.")
                 val authHeader = "Bearer $token"
-                val response = ApiClient.instance.getNewGameParameters(authHeader)
+
+                val levelToRequestFrom = if (isNewGame) null else currentLevel
+
+                val response = ApiClient.instance.getNewGameParameters(authHeader, levelToRequestFrom)
 
                 if (response.isSuccessful && response.body() != null) {
                     val params = response.body()!!
-                    Log.d("PatternMemory", "Received params: $params")
+                    Log.d("PatternMemory", "Received params for level ${params.difficultyLevel}: $params")
 
                     // Update game state with parameters from the backend
-                    currentDifficultyLevel = params.difficultyLevel
-                    currentLevel = params.difficultyLevel // Sync local level with backend difficulty
+                    currentLevel = params.difficultyLevel
                     cellsToIlluminate = params.patternSize
                     patternDisplayTime = params.displayTimeMs.toLong()
 
-                    // The backend sends total cells (9, 16), we need the side length (3, 4)
                     val side = sqrt(params.gridSize.toDouble()).toInt()
                     if (gridSize != side) {
                         gridSize = side
                         setupGrid() // Re-create the grid if size changed
                     }
 
-                    // Now start the actual game round
                     startRound()
-
                 } else {
-                    Log.e("PatternMemory", "API Error: ${response.code()} - ${response.errorBody()?.string()}")
-                    Toast.makeText(this@PatternMemoryActivity, "Oyun başlatılamadı. Sunucu hatası.", Toast.LENGTH_LONG).show()
+                    if (response.code() == 404) {
+                        handleGameWon()
+                    } else {
+                        Log.e("PatternMemory", "API Error: ${response.code()} - ${response.errorBody()?.string()}")
+                        Toast.makeText(this@PatternMemoryActivity, "Oyun başlatılamadı. Sunucu hatası.", Toast.LENGTH_LONG).show()
+                        resetUIForNewGame()
+                    }
+                }
+            } catch (e: Exception) {
+                if (e is HttpException && e.code() == 404) {
+                    handleGameWon()
+                } else {
+                    Log.e("PatternMemory", "Exception fetching game params", e)
+                    Toast.makeText(this@PatternMemoryActivity, "Hata: ${e.message}", Toast.LENGTH_LONG).show()
                     resetUIForNewGame()
                 }
-
-            } catch (e: Exception) {
-                Log.e("PatternMemory", "Exception fetching game params", e)
-                Toast.makeText(this@PatternMemoryActivity, "Hata: ${e.message}", Toast.LENGTH_LONG).show()
-                resetUIForNewGame()
             }
         }
     }
 
-    // --- NEW: This function handles starting a single round/level ---
     private fun startRound() {
         resetRoundState()
         updateLevelText()
         tvLevel.visibility = View.VISIBLE
-        // Short delay before showing the pattern
         handler.postDelayed({ generateAndShowPattern() }, 800)
     }
 
-    // Renamed from resetGame to resetRoundState for clarity
     private fun resetRoundState() {
         canUserClick = false
         userSelection.clear()
         pattern.clear()
-
         tvInstructions.text = getString(R.string.remember_pattern)
         btnStartGame.visibility = View.GONE
-
-        for (cell in gridCells) {
-            cell.setBackgroundColor(defaultCellColor)
-        }
+        gridCells.forEach { it.setBackgroundColor(defaultCellColor) }
     }
 
-    // --- NEW: Sends the game result to the backend ---
-    private fun sendGameResult(score: Int) {
+    private fun sendGameResult(isSuccess: Boolean) {
         val durationSeconds = ((System.currentTimeMillis() - sessionStartTime) / 1000).toInt()
+        // Score is the completed level number on success, 0 on failure.
+        val score = if (isSuccess) currentLevel else 0
 
         val request = GameSessionCreateRequest(
             gameName = "Pattern Memory",
             score = score,
             durationSeconds = durationSeconds,
-            difficultyLevel = currentDifficultyLevel
+            difficultyLevel = currentLevel // Always log the level that was attempted
         )
 
-        // Launch a background coroutine to send data. We don't need to wait for the result.
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val token = auth.currentUser?.getIdToken(false)?.await()?.token ?: return@launch
                 val authHeader = "Bearer $token"
                 val response = ApiClient.instance.createGameSession(authHeader, request)
                 if (response.isSuccessful) {
-                    Log.d("PatternMemory", "Game session logged successfully for level $currentDifficultyLevel")
+                    Log.d("PatternMemory", "Game session for level $currentLevel logged successfully with score $score.")
                 } else {
                     Log.e("PatternMemory", "Failed to log game session: ${response.code()}")
                 }
@@ -202,99 +191,78 @@ class PatternMemoryActivity : AppCompatActivity() {
         }
     }
 
-
     private fun generateAndShowPattern() {
         isShowingPattern = true
         canUserClick = false
         pattern.clear()
+        sessionStartTime = System.currentTimeMillis() // Start timer for this level attempt
 
-        // --- NEW: Record the start time for this level ---
-        sessionStartTime = System.currentTimeMillis()
-
-        // Dynamic pause calculation (can be simplified as display time is now from backend)
-        val currentPauseBetweenCells = maxOf(
-            patternDisplayTime / 4, // A reasonable fraction of the display time
-            MIN_PAUSE_BETWEEN_CELLS_MS
-        )
-
-        // Generate random pattern (No changes)
         val random = Random()
         val availableIndices = (0 until gridSize * gridSize).toMutableList()
-        for (i in 0 until cellsToIlluminate) {
+        repeat(cellsToIlluminate) {
             if (availableIndices.isNotEmpty()) {
                 val randomIndex = random.nextInt(availableIndices.size)
-                val selectedIndex = availableIndices[randomIndex]
-                pattern.add(selectedIndex)
-                availableIndices.removeAt(randomIndex)
+                pattern.add(availableIndices.removeAt(randomIndex))
             }
         }
-
-        // Show pattern with delay (using backend display time)
-        showPatternWithDelay(patternDisplayTime, currentPauseBetweenCells)
+        showPatternWithDelay()
     }
 
     private fun checkPattern() {
         canUserClick = false
-        val isCorrect = userSelection == pattern
+        val isCorrect = userSelection.sorted() == pattern.sorted()
 
         if (isCorrect) {
-            // --- NEW: Log successful result to backend ---
-            // Score can be the level number completed.
-            sendGameResult(score = currentLevel)
-
+            // --- LOGIC FOR SUCCESS ---
+            sendGameResult(isSuccess = true) // Log success to backend
             tvInstructions.text = "Doğru! Sonraki seviye..."
-            for (index in pattern) {
-                if (index < gridCells.size) {
-                    gridCells[index].setBackgroundColor(correctCellColor)
-                }
-            }
+            pattern.forEach { index -> gridCells.getOrNull(index)?.setBackgroundColor(correctCellColor) }
 
-            // Fetch parameters for the NEXT level
-            handler.postDelayed({ fetchGameParametersAndStart() }, 1500)
+            // --- MODIFIED: Fetch the NEXT level instead of ending the game ---
+            handler.postDelayed({
+                fetchAndStartRound(isNewGame = false)
+            }, 1500)
 
         } else {
-            // This part of the original code was unreachable due to early exit in onCellClicked.
-            // The logic is now handled in wrongSequence.
+            // This path is now handled by onCellClicked's else block, but as a fallback:
+            wrongSequence(userSelection.lastOrNull() ?: 0)
         }
     }
 
+    // This is called when the user clicks the wrong square
     private fun wrongSequence(wrongIndex: Int) {
         canUserClick = false
         isShowingPattern = false
 
-        // --- NEW: Log failed result to backend. We can use a score of 0 for failure.
-        sendGameResult(score = 0)
+        sendGameResult(isSuccess = false) // Log failure to backend
 
         tvInstructions.text = "Yanlış! Oyun Bitti."
-        gridCells[wrongIndex].setBackgroundColor(wrongCellColor)
+        gridCells.getOrNull(wrongIndex)?.setBackgroundColor(wrongCellColor)
 
-        // Show correct pattern
+        // Briefly show the correct pattern
         handler.postDelayed({
-            for (index in pattern) {
-                if (index < gridCells.size) {
-                    gridCells[index].setBackgroundColor(correctCellColor)
-                }
-            }
+            pattern.forEach { index -> gridCells.getOrNull(index)?.setBackgroundColor(correctCellColor) }
         }, 500)
 
-        // Reset UI to allow starting a new game
-        handler.postDelayed({
-            resetUIForNewGame()
-        }, 2000)
+        handler.postDelayed({ resetUIForNewGame() }, 2500)
+    }
+
+    // --- NEW: Handle winning the entire game ---
+    private fun handleGameWon() {
+        tvInstructions.text = "Tebrikler! Tüm seviyeleri tamamladın!"
+        tvLevel.visibility = View.VISIBLE // Keep the last level visible
+        resetUIForNewGame()
     }
 
     private fun resetUIForNewGame() {
-        for (cell in gridCells) {
-            cell.setBackgroundColor(defaultCellColor)
-        }
-        tvLevel.visibility = View.GONE
+        gridCells.forEach { it.setBackgroundColor(defaultCellColor) }
         tvInstructions.text = "Tekrar denemeye hazır mısın?"
         btnStartGame.text = getString(R.string.restart_game)
         btnStartGame.visibility = View.VISIBLE
         btnStartGame.isEnabled = true
     }
 
-    // --- UNCHANGED HELPER FUNCTIONS ---
+    // --- UNCHANGED HELPER FUNCTIONS (with minor fixes for safety) ---
     private fun updateLevelText() {
         tvLevel.text = "Seviye: $currentLevel"
     }
@@ -302,16 +270,32 @@ class PatternMemoryActivity : AppCompatActivity() {
     private fun onCellClicked(index: Int) {
         if (!canUserClick || isShowingPattern || index >= gridCells.size) return
 
-        if (userSelection.size < pattern.size && index == pattern[userSelection.size]) {
+        // The core sequence check: Is this the correct next button in the pattern?
+        if (index == pattern.getOrNull(userSelection.size)) {
+            // Correct tap in the sequence
             userSelection.add(index)
             gridCells[index].setBackgroundColor(selectedCellColor)
 
+            // Did the user just complete the full pattern?
             if (userSelection.size == pattern.size) {
-                handler.postDelayed({ checkPattern() }, 300)
+                // Yes, they finished the sequence correctly.
+                canUserClick = false // Prevent more clicks
+                handler.postDelayed({ levelSuccess() }, 300)
             }
         } else {
+            // Wrong tap, the sequence is broken. Game over.
             wrongSequence(index)
         }
+    }
+    private fun levelSuccess() {
+        sendGameResult(isSuccess = true) // Log success
+        tvInstructions.text = "Doğru! Sonraki seviye..."
+        pattern.forEach { index -> gridCells.getOrNull(index)?.setBackgroundColor(correctCellColor) }
+
+        // Fetch the NEXT level
+        handler.postDelayed({
+            fetchAndStartRound(isNewGame = false)
+        }, 1500)
     }
 
     private fun setupGrid() {
@@ -332,23 +316,27 @@ class PatternMemoryActivity : AppCompatActivity() {
                     setMargins(4, 4, 4, 4)
                 }
                 setBackgroundColor(defaultCellColor)
-                setOnClickListener { if (canUserClick && !isShowingPattern) onCellClicked(i) }
+                setOnClickListener { onCellClicked(i) }
             }
             gridLayout.addView(button)
             gridCells.add(button)
         }
     }
 
-    private fun showPatternWithDelay(illuminateDelay: Long, pauseBetweenCells: Long) {
-        val totalCycleTime = illuminateDelay + pauseBetweenCells
-        for ((index, cellIndex) in pattern.withIndex()) {
-            if (cellIndex < gridCells.size) {
-                val startTime = index * totalCycleTime
-                handler.postDelayed({ gridCells[cellIndex].setBackgroundColor(illuminatedCellColor) }, startTime)
-                handler.postDelayed({ gridCells[cellIndex].setBackgroundColor(defaultCellColor) }, startTime + illuminateDelay)
-            }
+    private fun showPatternWithDelay() {
+        val currentPauseBetweenCells = maxOf(
+            patternDisplayTime / (cellsToIlluminate.takeIf { it > 0 } ?: 1),
+            MIN_PAUSE_BETWEEN_CELLS_MS
+        )
+        val illuminateDuration = currentPauseBetweenCells.coerceAtMost(MIN_ILLUMINATE_DELAY_MS)
+
+        pattern.forEachIndexed { index, cellIndex ->
+            val startTime = index * (illuminateDuration + 50L) // Small pause
+            handler.postDelayed({ gridCells.getOrNull(cellIndex)?.setBackgroundColor(illuminatedCellColor) }, startTime)
+            handler.postDelayed({ gridCells.getOrNull(cellIndex)?.setBackgroundColor(defaultCellColor) }, startTime + illuminateDuration)
         }
-        val totalPatternTime = pattern.size * totalCycleTime + 500L
+
+        val totalPatternTime = pattern.size * (illuminateDuration + 50L) + 500L
         handler.postDelayed({
             isShowingPattern = false
             canUserClick = true
